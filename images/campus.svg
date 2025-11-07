@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <!-- Sky gradient -->
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0F6FF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grassGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#90EE90;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="buildingGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5DEB3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DEB887;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky -->
+  <rect width="1200" height="400" fill="url(#skyGradient)"/>
+  
+  <!-- Ground -->
+  <rect x="0" y="400" width="1200" height="200" fill="url(#grassGradient)"/>
+  
+  <!-- Main Building -->
+  <rect x="300" y="150" width="300" height="250" fill="url(#buildingGradient)" stroke="#8B4513" stroke-width="2"/>
+  
+  <!-- Building Roof -->
+  <polygon points="280,150 420,80 560,150" fill="#8B4513"/>
+  
+  <!-- Windows on main building -->
+  <rect x="320" y="180" width="40" height="50" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="380" y="180" width="40" height="50" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="440" y="180" width="40" height="50" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="500" y="180" width="40" height="50" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  
+  <rect x="320" y="250" width="40" height="50" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="380" y="250" width="40" height="50" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="440" y="250" width="40" height="50" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="500" y="250" width="40" height="50" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  
+  <!-- Main Door -->
+  <rect x="410" y="320" width="60" height="80" fill="#8B4513" stroke="#000" stroke-width="2"/>
+  <circle cx="460" cy="360" r="3" fill="#FFD700"/>
+  
+  <!-- Left Building -->
+  <rect x="100" y="200" width="180" height="200" fill="url(#buildingGradient)" stroke="#8B4513" stroke-width="2"/>
+  <polygon points="90,200 190,150 290,200" fill="#8B4513"/>
+  
+  <!-- Windows on left building -->
+  <rect x="120" y="230" width="30" height="40" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="170" y="230" width="30" height="40" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="220" y="230" width="30" height="40" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  
+  <rect x="120" y="290" width="30" height="40" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="170" y="290" width="30" height="40" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="220" y="290" width="30" height="40" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  
+  <!-- Right Building -->
+  <rect x="620" y="180" width="200" height="220" fill="url(#buildingGradient)" stroke="#8B4513" stroke-width="2"/>
+  <polygon points="610,180 720,120 830,180" fill="#8B4513"/>
+  
+  <!-- Windows on right building -->
+  <rect x="640" y="210" width="35" height="45" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="690" y="210" width="35" height="45" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="740" y="210" width="35" height="45" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  
+  <rect x="640" y="270" width="35" height="45" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="690" y="270" width="35" height="45" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  <rect x="740" y="270" width="35" height="45" fill="#4169E1" stroke="#000" stroke-width="1"/>
+  
+  <!-- Trees -->
+  <circle cx="50" cy="350" r="40" fill="#228B22"/>
+  <rect x="45" y="350" width="10" height="50" fill="#8B4513"/>
+  
+  <circle cx="950" cy="340" r="45" fill="#228B22"/>
+  <rect x="945" y="340" width="10" height="60" fill="#8B4513"/>
+  
+  <circle cx="1100" cy="360" r="35" fill="#228B22"/>
+  <rect x="1095" y="360" width="10" height="40" fill="#8B4513"/>
+  
+  <!-- Pathway -->
+  <rect x="0" y="450" width="1200" height="30" fill="#696969"/>
+  
+  <!-- School Sign -->
+  <rect x="450" y="420" width="200" height="60" fill="#FFFFFF" stroke="#000" stroke-width="2"/>
+  <text x="550" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#000">BBD ACADEMY</text>
+  <text x="550" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#000">Excellence in Education</text>
+  
+  <!-- Clouds -->
+  <ellipse cx="200" cy="80" rx="30" ry="20" fill="#FFFFFF" opacity="0.8"/>
+  <ellipse cx="220" cy="75" rx="25" ry="15" fill="#FFFFFF" opacity="0.8"/>
+  <ellipse cx="240" cy="80" rx="20" ry="12" fill="#FFFFFF" opacity="0.8"/>
+  
+  <ellipse cx="800" cy="60" rx="35" ry="25" fill="#FFFFFF" opacity="0.8"/>
+  <ellipse cx="825" cy="55" rx="30" ry="20" fill="#FFFFFF" opacity="0.8"/>
+  <ellipse cx="850" cy="60" rx="25" ry="15" fill="#FFFFFF" opacity="0.8"/>
+  
+  <!-- Sun -->
+  <circle cx="1000" cy="100" r="40" fill="#FFD700" opacity="0.9"/>
+</svg>
