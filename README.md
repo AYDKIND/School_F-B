@@ -1,82 +1,41 @@
-# 🏫 BBD Academy - Official Website
+# BBD School Management System
 
-A modern, responsive website for BBD Academy built with React and Vite.
+Production-ready full-stack application for managing school operations, including admin, faculty, and student workflows. Built with React (Vite) on the frontend, Node.js/Express on the backend, and MongoDB for data persistence.
 
-## ✨ Features
+## Features
+- Role-based authentication and protected routes (admin, faculty, student)
+- Responsive UI with route-driven navigation
+- Robust backend with security middleware, rate limiting, and CSRF placeholder
+- Comprehensive error handling and logging across client and server
+- Unit, integration, and end-to-end tests
+- Dev proxy for seamless API calls; same-origin serving in production
 
-- **📱 Responsive Design** - Works perfectly on all devices
-- **🎓 Admission System** - Complete online application with OTP verification
-- **💰 Fee Payment** - Secure payment interface with multiple options
-- **👥 Team Profiles** - Professional staff and faculty pages
-- **📞 Contact Forms** - Easy communication with the school
-- **🖼️ Gallery** - Showcase of school activities and facilities
-- **👨‍💼 Admin Portal** - Administrative management interface
-- **👨‍🎓 Student Portal** - Student-specific features and access
+## Documentation
+- System Architecture: `docs/Architecture.md`
+- Setup & Deployment: `docs/SetupDeployment.md`
+- Security Guidelines: `docs/Security.md`
+- Maintenance Guide: `docs/MaintenanceGuide.md`
+- Integration Notes: `docs/integration.md`
 
-## 🚀 Live Website
+## Quick Start
+1. Install dependencies:
+   - Frontend: `npm install`
+   - Backend: `cd backend && npm install`
+2. Configure environment:
+   - Frontend: `.env.development` (already set: `VITE_API_BASE_URL=/api`)
+   - Backend: create `backend/.env` with `PORT=5000`, `JWT_SECRET=...`, `MONGODB_URI=...`, `FRONTEND_URL=http://localhost:5177`
+3. Run dev servers:
+   - Backend: `cd backend && npm run dev`
+   - Frontend: `npm run dev -- --port 5177`
+4. Open the app: `http://localhost:5177/`
 
-Visit the live website: [https://aydkind.github.io/School_BBD/](https://aydkind.github.io/School_BBD/)
+## Testing
+- Frontend unit tests: `npm test`
+- Backend tests: `cd backend && npm test`
+- E2E tests (Playwright): `npx playwright test` (ensure dev servers running)
 
-## 🛠️ Technology Stack
+## Build & Preview
+- Frontend production build: `npm run build`
+- Preview locally: `npm run preview`
 
-- **Frontend:** React 18
-- **Build Tool:** Vite
-- **Styling:** CSS3 with responsive design
-- **Icons:** React Icons
-- **PDF Generation:** jsPDF
-- **Deployment:** GitHub Pages with GitHub Actions
-
-## 📁 Project Structure
-
-```
-src/
-├── components/     # Reusable components (Navbar, Footer)
-├── pages/         # All page components
-├── assets/        # Images and static files
-├── App.jsx        # Main app component
-└── main.jsx       # Entry point
-```
-
-## 🏗️ Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-## 📄 Pages
-
-- **Home** - Welcome and overview
-- **About** - School history, mission, vision, team
-- **Admissions** - Application process and forms
-- **Fee Payment** - Online payment system
-- **Contact** - Contact information and forms
-- **Academic** - Course information
-- **Faculty** - Staff profiles
-- **Gallery** - Photo gallery
-- **Admin** - Administrative portal
-- **Student** - Student portal
-
-## 🎯 Ready for Backend Integration
-
-The frontend is complete and ready for backend API integration. Key integration points include:
-
-- Authentication APIs
-- Admission form submission
-- Payment processing
-- Contact form handling
-- Content management
-
----
-
-**© 2024 BBD Academy. All Rights Reserved.**
-# Deployed successfully
+Refer to `docs/SetupDeployment.md` for detailed production deployment steps.

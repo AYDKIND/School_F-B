@@ -4,6 +4,7 @@ import './Admissions.css';
 
 // Add jsPDF import
 import jsPDF from 'jspdf';
+import { generalAPI } from '../../services/api.js';
 
 const Admissions = () => {
   const [formData, setFormData] = useState({
@@ -14,9 +15,7 @@ const Admissions = () => {
     address: '',
     grade: '',
     previousSchool: '',
-    documents: null,
-    paymentMethod: '',
-    feeAmount: 5000 // Default admission fee
+    documents: null
   });
   
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -61,25 +60,8 @@ const Admissions = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Validate payment method is selected
-    if (!formData.paymentMethod) {
-      alert('Please select a payment method to proceed.');
-      return;
-    }
-    
     // In a real application, you would send this data to a server
     console.log('Form submitted:', formData);
-    
-    // Handle different payment methods
-    if (formData.paymentMethod === 'online') {
-      // Redirect to payment gateway
-      alert('Redirecting to secure payment gateway...');
-      // In real implementation: window.location.href = paymentGatewayUrl;
-    } else {
-      alert(`Application submitted successfully! Please complete payment via ${formData.paymentMethod.replace('_', ' ')}.`);
-    }
-    
     setFormSubmitted(true);
   };
 
@@ -102,23 +84,12 @@ const Admissions = () => {
 
   const sendMobileOtp = async () => {
     setLoading(prev => ({ ...prev, sendingMobileOtp: true }));
-    
-    // Simulate API call to backend for OTP generation
     try {
-      // Replace this with actual API call
-      // await fetch('/api/send-mobile-otp', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ mobile: contactInfo.mobile })
-      // });
-      
-      // Simulate delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const res = await generalAPI.sendOTP(contactInfo.mobile);
       setOtpSent(prev => ({ ...prev, mobile: true }));
-      alert(`OTP sent to ${contactInfo.mobile}`);
+      alert(res.data?.message || `OTP sent to ${contactInfo.mobile}`);
     } catch (error) {
-      alert('Failed to send OTP. Please try again.');
+      alert(error.userMessage || 'Failed to send OTP. Please try again.');
     } finally {
       setLoading(prev => ({ ...prev, sendingMobileOtp: false }));
     }
@@ -126,23 +97,12 @@ const Admissions = () => {
 
   const sendEmailOtp = async () => {
     setLoading(prev => ({ ...prev, sendingEmailOtp: true }));
-    
-    // Simulate API call to backend for OTP generation
     try {
-      // Replace this with actual API call
-      // await fetch('/api/send-email-otp', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: contactInfo.email })
-      // });
-      
-      // Simulate delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const res = await generalAPI.sendEmailOTP(contactInfo.email);
       setOtpSent(prev => ({ ...prev, email: true }));
-      alert(`OTP sent to ${contactInfo.email}`);
+      alert(res.data?.message || `OTP sent to ${contactInfo.email}`);
     } catch (error) {
-      alert('Failed to send OTP. Please try again.');
+      alert(error.userMessage || 'Failed to send OTP. Please try again.');
     } finally {
       setLoading(prev => ({ ...prev, sendingEmailOtp: false }));
     }
@@ -150,30 +110,16 @@ const Admissions = () => {
 
   const verifyMobileOtp = async () => {
     setLoading(prev => ({ ...prev, verifyingMobileOtp: true }));
-    
     try {
-      // Replace this with actual API call
-      // const response = await fetch('/api/verify-mobile-otp', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ 
-      //     mobile: contactInfo.mobile, 
-      //     otp: otpData.mobileOtp 
-      //   })
-      // });
-      
-      // Simulate delay and verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any 6-digit OTP
-      if (otpData.mobileOtp.length === 6) {
+      const res = await generalAPI.verifyOTP(contactInfo.mobile, otpData.mobileOtp);
+      if (res.data?.success) {
         setOtpData(prev => ({ ...prev, mobileVerified: true }));
-        alert('Mobile number verified successfully!');
+        alert(res.data?.message || 'Mobile number verified successfully!');
       } else {
         alert('Invalid OTP. Please try again.');
       }
     } catch (error) {
-      alert('Verification failed. Please try again.');
+      alert(error.userMessage || 'Verification failed. Please try again.');
     } finally {
       setLoading(prev => ({ ...prev, verifyingMobileOtp: false }));
     }
@@ -181,30 +127,16 @@ const Admissions = () => {
 
   const verifyEmailOtp = async () => {
     setLoading(prev => ({ ...prev, verifyingEmailOtp: true }));
-    
     try {
-      // Replace this with actual API call
-      // const response = await fetch('/api/verify-email-otp', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ 
-      //     email: contactInfo.email, 
-      //     otp: otpData.emailOtp 
-      //   })
-      // });
-      
-      // Simulate delay and verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any 6-digit OTP
-      if (otpData.emailOtp.length === 6) {
+      const res = await generalAPI.verifyEmailOTP(contactInfo.email, otpData.emailOtp);
+      if (res.data?.success) {
         setOtpData(prev => ({ ...prev, emailVerified: true }));
-        alert('Email verified successfully!');
+        alert(res.data?.message || 'Email verified successfully!');
       } else {
         alert('Invalid OTP. Please try again.');
       }
     } catch (error) {
-      alert('Verification failed. Please try again.');
+      alert(error.userMessage || 'Verification failed. Please try again.');
     } finally {
       setLoading(prev => ({ ...prev, verifyingEmailOtp: false }));
     }
@@ -574,66 +506,8 @@ const Admissions = () => {
                       </div>
                     </div>
                     
-                    <div className="payment-section">
-                      <h3>Admission Fee Payment</h3>
-                      <div className="fee-info">
-                        <p><strong>Admission Fee: ₹{formData.feeAmount}</strong></p>
-                        <p className="fee-note">*Payment is required to complete the admission process</p>
-                      </div>
-                      
-                      <div className="form-group">
-                        <label htmlFor="paymentMethod">Payment Method *</label>
-                        <select 
-                          id="paymentMethod" 
-                          name="paymentMethod" 
-                          value={formData.paymentMethod} 
-                          onChange={handleChange} 
-                          required
-                        >
-                          <option value="">Select Payment Method</option>
-                          <option value="online">Online Payment (UPI/Card/Net Banking)</option>
-                          <option value="bank_transfer">Bank Transfer</option>
-                          <option value="demand_draft">Demand Draft</option>
-                          <option value="cash">Cash Payment at School</option>
-                        </select>
-                      </div>
-                      
-                      {formData.paymentMethod === 'online' && (
-                        <div className="payment-gateway">
-                          <p>You will be redirected to secure payment gateway after form submission.</p>
-                        </div>
-                      )}
-                      
-                      {formData.paymentMethod === 'bank_transfer' && (
-                        <div className="bank-details">
-                          <h4>Bank Transfer Details:</h4>
-                          <p><strong>Account Name:</strong> BBD School</p>
-                          <p><strong>Account Number:</strong> 1234567890</p>
-                          <p><strong>IFSC Code:</strong> SBIN0001234</p>
-                          <p><strong>Bank:</strong> State Bank of India</p>
-                          <p className="note">Please mention student name and mobile number in transfer remarks.</p>
-                        </div>
-                      )}
-                      
-                      {formData.paymentMethod === 'demand_draft' && (
-                        <div className="dd-details">
-                          <h4>Demand Draft Details:</h4>
-                          <p><strong>Payable to:</strong> BBD School</p>
-                          <p><strong>Payable at:</strong> Lucknow</p>
-                          <p className="note">Please write student name and mobile number on the back of DD.</p>
-                        </div>
-                      )}
-                      
-                      {formData.paymentMethod === 'cash' && (
-                        <div className="cash-payment">
-                          <p><strong>Cash Payment:</strong> Visit school office during working hours (9 AM - 4 PM)</p>
-                          <p className="note">Please bring a copy of this application form.</p>
-                        </div>
-                      )}
-                    </div>
-                    
                     <div className="form-actions">
-                      <button type="submit" className="submit-btn">Submit Application & Proceed to Payment</button>
+                      <button type="submit" className="submit-btn">Submit Application</button>
                     </div>
                   </form>
                 </>

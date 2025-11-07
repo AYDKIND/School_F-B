@@ -1,23 +1,29 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaChalkboardTeacher, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../hooks/useNotification';
+import { authAPI } from '../../services/api.js';
+import config from '../../config/config.js';
 import './FacultyLogin.css';
 
 const FacultyLogin = () => {
   const [loginData, setLoginData] = useState({
-    userID: '',
+    email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState('');
   const [isLogging, setIsLogging] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [resetStep, setResetStep] = useState(1); // 1: request OTP, 2: submit OTP + new password
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
-
-  // Demo credentials for faculty
-  const DEMO_CREDENTIALS = {
-    userID: 'faculty2024',
-    password: 'faculty123'
-  };
+  const location = useLocation();
+  const { login, error, clearError } = useAuth();
+  const { showNotification } = useNotification();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,26 +32,31 @@ const FacultyLogin = () => {
       [name]: value
     }));
     // Clear error when user starts typing
-    if (loginError) {
-      setLoginError('');
+    if (error) {
+      clearError();
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLogging(true);
-    setLoginError('');
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const result = await login({
+        email: loginData.email,
+        password: loginData.password,
+        role: 'faculty'
+      });
 
-    // Verify credentials
-    if (loginData.userID === DEMO_CREDENTIALS.userID && 
-        loginData.password === DEMO_CREDENTIALS.password) {
-      // Successful login - redirect to faculty dashboard
-      navigate('/faculty/dashboard');
-    } else {
-      setLoginError('Invalid User ID or Password. Please try again.');
+      if (result.success) {
+        // Successful login - redirect to original path or dashboard
+        const from = location.state?.from?.pathname || '/faculty/dashboard';
+        navigate(from, { replace: true });
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+    } finally {
+      setIsLogging(false);
     }
     
     setIsLogging(false);
@@ -53,6 +64,72 @@ const FacultyLogin = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleForgotToggle = (e) => {
+    e.preventDefault();
+    clearError?.();
+    setForgotMode((prev) => !prev);
+    setResetStep(1);
+    setResetEmail('');
+    setResetOtp('');
+    setNewPassword('');
+    setConfirmPassword('');
+  };
+
+  const handleRequestReset = async (e) => {
+    e.preventDefault();
+    setIsLogging(true);
+    try {
+      const { success, message } = await authAPI.forgotPassword({ email: resetEmail });
+      if (success) {
+        showNotification('OTP sent to your email. Check inbox/spam.', 'info');
+        setResetStep(2);
+      } else {
+        showNotification(message || 'Failed to send OTP. Try again.', 'error');
+      }
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      showNotification('Failed to send OTP. Please try again.', 'error');
+    } finally {
+      setIsLogging(false);
+    }
+  };
+
+  const handleSubmitReset = async (e) => {
+    e.preventDefault();
+    clearError?.();
+
+    if (newPassword !== confirmPassword) {
+      showNotification('Passwords do not match.', 'error');
+      return;
+    }
+
+    setIsLogging(true);
+    try {
+      const { success, message } = await authAPI.resetPassword({
+        email: resetEmail,
+        otp: resetOtp,
+        newPassword
+      });
+
+      if (success) {
+        showNotification('Password reset successful. You can now log in.', 'success');
+        setForgotMode(false);
+        setResetStep(1);
+        setResetEmail('');
+        setResetOtp('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        showNotification(message || 'Failed to reset password.', 'error');
+      }
+    } catch (err) {
+      console.error('Reset password error:', err);
+      showNotification('Failed to reset password. Please try again.', 'error');
+    } finally {
+      setIsLogging(false);
+    }
   };
 
   return (
@@ -69,17 +146,17 @@ const FacultyLogin = () => {
 
           <form onSubmit={handleLogin} className="login-form">
             <div className="form-group">
-              <label htmlFor="userID">
+              <label htmlFor="email">
                 <FaUser className="input-icon" />
-                User ID
+                Email
               </label>
               <input
-                type="text"
-                id="userID"
-                name="userID"
-                value={loginData.userID}
+                type="email"
+                id="email"
+                name="email"
+                value={loginData.email}
                 onChange={handleInputChange}
-                placeholder="Enter your User ID"
+                placeholder="Enter your email"
                 required
               />
             </div>
@@ -109,9 +186,9 @@ const FacultyLogin = () => {
               </div>
             </div>
 
-            {loginError && (
+            {error && (
               <div className="error-message">
-                {loginError}
+                {error}
               </div>
             )}
 
@@ -124,11 +201,97 @@ const FacultyLogin = () => {
             </button>
           </form>
 
-          <div className="demo-credentials">
-            <h4>Demo Credentials:</h4>
-            <p><strong>User ID:</strong> faculty2024</p>
-            <p><strong>Password:</strong> faculty123</p>
+          <div className="login-actions">
+            <button type="button" onClick={handleForgotToggle} className="forgot-password-link" aria-label={forgotMode ? 'Back to Login' : 'Forgot password?'}>
+              {forgotMode ? 'Back to Login' : 'Forgot password?'}
+            </button>
           </div>
+
+          {forgotMode && (
+            <div className="forgot-password-card">
+              <h4>Reset your password</h4>
+              {resetStep === 1 && (
+                <form onSubmit={handleRequestReset} className="forgot-form">
+                  <div className="input-group">
+                    <label htmlFor="resetEmail">Email</label>
+                    <div className="input-with-icon">
+                      <FaUser className="input-icon" />
+                      <input
+                        type="email"
+                        id="resetEmail"
+                        name="resetEmail"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        placeholder="Enter your registered email"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" className="login-btn" disabled={isLogging}>
+                    {isLogging ? 'Sending OTP...' : 'Send OTP'}
+                  </button>
+                </form>
+              )}
+
+              {resetStep === 2 && (
+                <form onSubmit={handleSubmitReset} className="forgot-form">
+                  <div className="input-group">
+                    <label htmlFor="resetOtp">OTP</label>
+                    <div className="input-with-icon">
+                      <FaLock className="input-icon" />
+                      <input
+                        type="text"
+                        id="resetOtp"
+                        name="resetOtp"
+                        value={resetOtp}
+                        onChange={(e) => setResetOtp(e.target.value)}
+                        placeholder="Enter 6-digit OTP"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label htmlFor="newPassword">New Password</label>
+                    <div className="input-with-icon">
+                      <FaLock className="input-icon" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        id="newPassword"
+                        name="newPassword"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password"
+                        required
+                      />
+                      <button type="button" className="password-toggle" onClick={togglePasswordVisibility}>
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label htmlFor="confirmPassword">Confirm Password</label>
+                    <div className="input-with-icon">
+                      <FaLock className="input-icon" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Re-enter new password"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" className="login-btn" disabled={isLogging}>
+                    {isLogging ? 'Resetting...' : 'Reset Password'}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* Demo credentials removed for production */}
         </div>
       </div>
     </main>

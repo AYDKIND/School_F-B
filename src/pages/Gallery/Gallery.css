@@ -273,16 +273,10 @@
   margin: 0 auto;
 }
 
-/* Responsive Styles */
+/* Responsive Design */
 @media (max-width: 768px) {
-  .gallery-hero {
-    height: 50vh;
-    padding: 0 1rem;
-  }
-
   .gallery-hero h1 {
     font-size: 2.5rem;
-    margin-bottom: 0.5rem;
   }
 
   .gallery-hero p {
@@ -290,47 +284,32 @@
     padding: 0 1rem;
   }
 
-  .gallery-content {
-    padding: 3rem 0;
-  }
-
   .gallery-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
     padding: 0 1rem;
   }
 
-  .image-container {
-    height: 220px;
-  }
-
   .category-filter {
-    gap: 0.8rem;
     padding: 0 1rem;
-    margin-bottom: 2rem;
+    gap: 0.5rem;
   }
 
   .filter-btn {
-    padding: 0.7rem 1.3rem;
+    padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
-    min-height: 44px;
-    min-width: 120px;
-  }
-
-  .modal-overlay {
-    padding: 1rem;
   }
 
   .modal-content {
-    margin: 0;
+    margin: 1rem;
     max-width: calc(100vw - 2rem);
     max-height: calc(100vh - 2rem);
   }
 
   .modal-nav {
-    width: 44px;
-    height: 44px;
-    font-size: 1.1rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
   }
 
   .modal-nav.prev {
@@ -348,38 +327,24 @@
   .modal-info h3 {
     font-size: 1.3rem;
   }
-
-  .modal-close {
-    width: 44px;
-    height: 44px;
-    font-size: 1.2rem;
-  }
 }
 
 @media (max-width: 480px) {
   .gallery-hero {
-    height: 40vh;
-    padding: 0 0.5rem;
+    height: 50vh;
   }
 
   .gallery-hero h1 {
-    font-size: 1.8rem;
-    line-height: 1.2;
+    font-size: 2rem;
   }
 
   .gallery-hero p {
-    font-size: 0.95rem;
-    padding: 0 0.5rem;
-  }
-
-  .gallery-content {
-    padding: 2rem 0;
+    font-size: 1rem;
   }
 
   .gallery-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
-    padding: 0 0.5rem;
   }
 
   .image-container {
@@ -389,77 +354,10 @@
   .category-filter {
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
   }
 
   .filter-btn {
     width: 200px;
     text-align: center;
-    padding: 0.8rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .modal-overlay {
-    padding: 0.5rem;
-  }
-
-  .modal-content {
-    max-width: calc(100vw - 1rem);
-    max-height: calc(100vh - 1rem);
-  }
-
-  .modal-nav {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-  }
-
-  .modal-nav.prev {
-    left: 0.25rem;
-  }
-
-  .modal-nav.next {
-    right: 0.25rem;
-  }
-
-  .modal-info {
-    padding: 1rem;
-  }
-
-  .modal-info h3 {
-    font-size: 1.1rem;
-  }
-
-  .modal-info p {
-    font-size: 0.85rem;
-  }
-
-  .modal-close {
-    width: 40px;
-    height: 40px;
-    font-size: 1.1rem;
-    top: 0.5rem;
-    right: 0.5rem;
-  }
-}
-
-@media (max-width: 375px) {
-  .gallery-hero h1 {
-    font-size: 1.6rem;
-  }
-
-  .gallery-hero p {
-    font-size: 0.9rem;
-  }
-
-  .filter-btn {
-    width: 180px;
-    padding: 0.7rem 0.8rem;
-    font-size: 0.85rem;
-  }
-
-  .image-container {
-    height: 180px;
   }
 }

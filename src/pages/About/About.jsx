@@ -21,7 +21,7 @@ const About = () => {
             </div>
             <div className="about-text">
               <h2>Our Story</h2>
-              <p>Founded in 2015, BBD Academy has been a pioneer in providing quality education to students from all walks of life. Our institution was established with the vision of creating a learning environment that nurtures creativity, critical thinking, and character development.</p>
+              <p>Founded in 2015, Baba Basudev Academy has been a pioneer in providing quality education to students from all walks of life. Our institution was established with the vision of creating a learning environment that nurtures creativity, critical thinking, and character development.</p>
               <p>Over the years, we have grown from a small establishment to one of the most respected educational institutions in the region, maintaining our commitment to academic excellence and holistic development.</p>
             </div>
           </div>

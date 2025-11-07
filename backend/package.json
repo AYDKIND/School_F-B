@@ -1,0 +1,48 @@
+{
+  "name": "school-bbd-backend",
+  "version": "1.0.0",
+  "description": "Backend API for BBD School Management System",
+  "main": "src/server.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "lint": "eslint src/ --ext .js",
+    "lint:fix": "eslint src/ --ext .js --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "build": "echo \"Production build ready\"",
+    "start:prod": "NODE_ENV=production node src/server.js"
+  },
+  "keywords": [
+    "school",
+    "management",
+    "api",
+    "education",
+    "nodejs",
+    "express"
+  ],
+  "author": "BBD School",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "chart.js": "^4.5.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.2",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.10",
+    "react-chartjs-2": "^5.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

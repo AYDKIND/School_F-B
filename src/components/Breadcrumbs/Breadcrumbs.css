@@ -1,0 +1,36 @@
+.breadcrumbs {
+  background: #f7f7f9;
+  border-bottom: 1px solid #e5e5ea;
+}
+.breadcrumbs-list {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.breadcrumbs-item {
+  color: #555;
+}
+.breadcrumbs-item + .breadcrumbs-item::before {
+  content: "/";
+  margin: 0 6px;
+  color: #aaa;
+}
+.breadcrumbs a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+.breadcrumbs-current {
+  font-weight: 600;
+  color: #222;
+}
+
+@media (max-width: 640px) {
+  .breadcrumbs-list { padding: 6px 12px; }
+}

@@ -1,152 +1,769 @@
-import React, { useState } from 'react';
-import { FaSearch, FaEdit, FaTrash, FaUserPlus } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FaSearch, FaEdit, FaTrash, FaUserPlus, FaSyncAlt, FaEye } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
+import { useLoading, useMultipleLoading } from '../../hooks/useLoading';
+import { useNotification } from '../../components/Notification';
+import LoadingSpinner, { SkeletonLoader, LoadingButton } from '../../components/Loading/LoadingSpinner';
+import { adminAPI } from '../../services/api';
+import StudentForm from '../../components/admin/StudentForm';
+import './ManageStudents.css';
 
 export default function ManageStudents() {
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [searchTerm, setSearchTerm] = useState('');
+  const [students, setStudents] = useState([]);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   
-  // Sample student data
-  const students = [
-    { id: 1, name: 'Rahul Yadav', class: 'Class 10-A', rollNo: 'BBD10001', contact: '9876543210', status: 'Active' },
-    { id: 2, name: 'Priya Patel', class: 'Class 9-B', rollNo: 'BBD09002', contact: '9876543211', status: 'Active' },
-    { id: 3, name: 'Amit Kumar', class: 'Class 11-A', rollNo: 'BBD11003', contact: '9876543212', status: 'Active' },
-    { id: 4, name: 'Neha Yadav', class: 'Class 8-C', rollNo: 'BBD08004', contact: '9876543213', status: 'Inactive' },
-    { id: 5, name: 'Vikram Yadav', class: 'Class 12-B', rollNo: 'BBD12005', contact: '9876543214', status: 'Active' },
-  ];
+  // StudentForm state variables
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  
+  const { loading, withLoading } = useLoading();
+  const { setLoading: setActionLoading, isLoading: isActionLoading } = useMultipleLoading();
 
-  // Filter students based on search term
-  const filteredStudents = students.filter(student => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.rollNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.class.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const fetchStudents = async (page = 1, search = '') => {
+    try {
+      const response = await adminAPI.getStudents({
+        params: { page, limit: 10, search },
+        retry: true
+      });
+      
+      setStudents(response.data.data.students || []);
+      setCurrentPage(response.data.data.pagination?.currentPage || 1);
+      setTotalPages(response.data.data.pagination?.totalPages || 1);
+      setError(null);
+    } catch (err) {
+      setError(err.userMessage || 'Failed to fetch students');
+      showError(err.userMessage || 'Failed to fetch students');
+    }
+  };
+
+  useEffect(() => {
+    withLoading(() => fetchStudents(1, searchTerm));
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== '') {
+        withLoading(() => fetchStudents(1, searchTerm));
+      } else {
+        withLoading(() => fetchStudents(1));
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  const filteredStudents = students.filter(student => {
+    const fullName = `${student.user?.firstName || ''} ${student.user?.lastName || ''}`.trim();
+    return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           student.rollNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           student.class?.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  const handleEdit = async (studentId) => {
+    const student = students.find(s => s._id === studentId);
+    if (student) {
+      setSelectedStudent(student);
+      setIsFormOpen(true);
+    }
+  };
+
+  const handleAddStudent = () => {
+    setSelectedStudent(null);
+    setIsFormOpen(true);
+  };
+
+  const handleViewStudent = (student) => {
+    navigate(`/admin/student/${student._id}`);
+  };
+
+  const handleFormSave = (savedStudent) => {
+    if (selectedStudent) {
+      // Update existing student
+      setStudents(prev => prev.map(student => 
+        student._id === savedStudent._id ? savedStudent : student
+      ));
+      showSuccess('Student updated successfully');
+    } else {
+      // Add new student
+      setStudents(prev => [savedStudent, ...prev]);
+      showSuccess('Student added successfully');
+    }
+    setIsFormOpen(false);
+    setSelectedStudent(null);
+  };
+
+  const handleFormSubmit = async (formData) => {
+    try {
+      const response = await adminAPI.addStudent(formData, { retry: true });
+      const saved = response?.data?.data;
+      if (!saved) throw new Error('Invalid response from server');
+      handleFormSave(saved);
+    } catch (err) {
+      showError(err.userMessage || 'Failed to add student');
+    }
+  };
+
+  const handleFormCancel = () => {
+    setIsFormOpen(false);
+    setSelectedStudent(null);
+  };
+
+  // Removed demo message for bulk import; button hidden until feature is available
+
+  const handleDelete = async (studentId) => {
+    if (!window.confirm('Are you sure you want to delete this student?')) {
+      return;
+    }
+
+    setActionLoading(`delete-${studentId}`, true);
+    try {
+      await adminAPI.deleteStudent(studentId, { retry: true });
+      setStudents(prev => prev.filter(student => student._id !== studentId));
+      showSuccess('Student deleted successfully');
+    } catch (err) {
+      showError(err.userMessage || 'Failed to delete student');
+    } finally {
+      setActionLoading(`delete-${studentId}`, false);
+    }
+  };
+
+  const handleRefresh = () => {
+    withLoading(() => fetchStudents(currentPage, searchTerm));
+  };
+
+  const renderTableContent = () => {
+    if (loading) {
+      return (
+        <tbody>
+          {[...Array(5)].map((_, index) => (
+            <tr key={index}>
+              <td><SkeletonLoader width="80px" height="20px" /></td>
+              <td><SkeletonLoader width="120px" height="20px" /></td>
+              <td><SkeletonLoader width="60px" height="20px" /></td>
+              <td><SkeletonLoader width="100px" height="20px" /></td>
+              <td><SkeletonLoader width="60px" height="20px" /></td>
+              <td><SkeletonLoader width="80px" height="20px" /></td>
+            </tr>
+          ))}
+        </tbody>
+      );
+    }
+
+    if (error) {
+      return (
+        <tbody>
+          <tr>
+            <td colSpan="6" className="error-row">
+              <div className="error-content">
+                <p>{error}</p>
+                <LoadingButton 
+                  onClick={handleRefresh}
+                  loading={loading}
+                  variant="primary"
+                  size="small"
+                >
+                  <FaSyncAlt /> Retry
+                </LoadingButton>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      );
+    }
+
+    if (filteredStudents.length === 0) {
+      return (
+        <tbody>
+          <tr>
+            <td colSpan="6" className="empty-row">
+              <div className="empty-content">
+                <p>No students found</p>
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm('')}
+                    className="clear-search-btn"
+                  >
+                    Clear search
+                  </button>
+                )}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      );
+    }
+
+    return (
+      <tbody>
+        {filteredStudents.map((student, index) => (
+          <tr key={student._id || student.id || student.rollNumber || index}>
+            <td>{student.rollNumber}</td>
+            <td>{`${student.user?.firstName || ''} ${student.user?.lastName || ''}`.trim() || 'N/A'}</td>
+            <td>{student.class}</td>
+            <td>{student.user?.phone}</td>
+            <td>
+              <span className={`status ${student.status?.toLowerCase()}`}>
+                {student.status}
+              </span>
+            </td>
+            <td>
+              <div className="actions">
+                <LoadingButton
+                  onClick={() => handleViewStudent(student)}
+                  className="view-btn"
+                  title="View"
+                  size="small"
+                >
+                  <FaEye />
+                </LoadingButton>
+                <LoadingButton
+                  onClick={() => handleEdit(student._id)}
+                  className="edit-btn"
+                  title="Edit"
+                  size="small"
+                >
+                  <FaEdit />
+                </LoadingButton>
+                <LoadingButton
+                  onClick={() => handleDelete(student._id)}
+                  loading={isActionLoading(`delete-${student._id}`)}
+                  className="delete-btn"
+                  title="Delete"
+                  size="small"
+                  variant="danger"
+                >
+                  <FaTrash />
+                </LoadingButton>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    );
+  };
 
   return (
-    <div className="container" style={{ padding: '40px 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <div>
-          <h1 style={{ margin: '0' }}>Manage Students</h1>
-          <p>View, add, edit, or remove student records</p>
-        </div>
-        <button style={{
-          background: '#1a237e',
-          color: 'white',
-          border: 'none',
-          padding: '10px 15px',
-          borderRadius: '4px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          cursor: 'pointer'
-        }}>
-          <FaUserPlus /> Add New Student
-        </button>
-      </div>
-
-      {/* Search and Filter */}
-      <div style={{
-        background: 'white',
-        padding: '15px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-        marginBottom: '20px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            padding: '8px 15px',
-            flex: '1'
-          }}>
-            <FaSearch style={{ color: '#666' }} />
-            <input 
-              type="text" 
-              placeholder="Search by name, roll number, or class..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                border: 'none',
-                outline: 'none',
-                width: '100%',
-                fontSize: '1rem'
-              }}
-            />
-          </div>
+    <div className="manage-students">
+      <div className="header">
+        <h1>Manage Students</h1>
+        <div className="header-actions">
+          <LoadingButton
+            onClick={handleRefresh}
+            loading={loading}
+            className="refresh-btn"
+            title="Refresh"
+            size="medium"
+          >
+            <FaSyncAlt />
+          </LoadingButton>
+          <LoadingButton 
+            onClick={handleAddStudent}
+            className="add-btn"
+          >
+            <FaUserPlus /> Add New Student
+          </LoadingButton>
         </div>
       </div>
 
-      {/* Students Table */}
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="search-section">
+        <div className="search-input-group">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search students by name, roll number, or class..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+            disabled={loading}
+          />
+          {loading && <LoadingSpinner size="small" className="search-loading" />}
+        </div>
+      </div>
+
+      <div className="students-table-container">
+        <table className="students-table">
           <thead>
-            <tr style={{ background: '#f5f5f5' }}>
-              <th style={{ textAlign: 'left', padding: '12px', borderBottom: '1px solid #eee' }}>Roll No</th>
-              <th style={{ textAlign: 'left', padding: '12px', borderBottom: '1px solid #eee' }}>Name</th>
-              <th style={{ textAlign: 'left', padding: '12px', borderBottom: '1px solid #eee' }}>Class</th>
-              <th style={{ textAlign: 'left', padding: '12px', borderBottom: '1px solid #eee' }}>Contact</th>
-              <th style={{ textAlign: 'left', padding: '12px', borderBottom: '1px solid #eee' }}>Status</th>
-              <th style={{ textAlign: 'center', padding: '12px', borderBottom: '1px solid #eee' }}>Actions</th>
+            <tr>
+              <th>Roll Number</th>
+              <th>Name</th>
+              <th>Class</th>
+              <th>Phone</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {filteredStudents.map((student) => (
-              <tr key={student.id}>
-                <td style={{ padding: '12px', borderBottom: '1px solid #f2f2f2' }}>{student.rollNo}</td>
-                <td style={{ padding: '12px', borderBottom: '1px solid #f2f2f2' }}>{student.name}</td>
-                <td style={{ padding: '12px', borderBottom: '1px solid #f2f2f2' }}>{student.class}</td>
-                <td style={{ padding: '12px', borderBottom: '1px solid #f2f2f2' }}>{student.contact}</td>
-                <td style={{ padding: '12px', borderBottom: '1px solid #f2f2f2' }}>
-                  <span style={{
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '0.8rem',
-                    background: student.status === 'Active' ? '#e8f5e9' : '#ffebee',
-                    color: student.status === 'Active' ? '#2e7d32' : '#c62828'
-                  }}>
-                    {student.status}
-                  </span>
-                </td>
-                <td style={{ padding: '12px', borderBottom: '1px solid #f2f2f2', textAlign: 'center' }}>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
-                    <button style={{ 
-                      background: 'none', 
-                      border: 'none', 
-                      color: '#1a237e', 
-                      cursor: 'pointer',
-                      fontSize: '1rem'
-                    }}>
-                      <FaEdit />
-                    </button>
-                    <button style={{ 
-                      background: 'none', 
-                      border: 'none', 
-                      color: '#c62828', 
-                      cursor: 'pointer',
-                      fontSize: '1rem'
-                    }}>
-                      <FaTrash />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+          {renderTableContent()}
         </table>
       </div>
 
-      {filteredStudents.length === 0 && (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '30px', 
-          background: '#f9f9f9', 
-          borderRadius: '8px',
-          margin: '20px 0'
-        }}>
-          <p>No students found matching your search criteria.</p>
+      {!loading && !error && totalPages > 1 && (
+        <div className="pagination">
+          <LoadingButton
+            onClick={() => executeWithLoading(() => fetchStudents(currentPage - 1, searchTerm))}
+            disabled={currentPage === 1}
+            loading={loading}
+            size="small"
+            className="pagination-btn"
+          >
+            Previous
+          </LoadingButton>
+          
+          <div className="pagination-info">
+            <span>Page {currentPage} of {totalPages}</span>
+            <span className="total-records">
+              ({filteredStudents.length} students)
+            </span>
+          </div>
+          
+          <LoadingButton
+            onClick={() => executeWithLoading(() => fetchStudents(currentPage + 1, searchTerm))}
+            disabled={currentPage === totalPages}
+            loading={loading}
+            size="small"
+            className="pagination-btn"
+          >
+            Next
+          </LoadingButton>
         </div>
       )}
+
+      <style>{`
+        .manage-students {
+          padding: 20px;
+        }
+
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+
+        .header h1 {
+          color: #333;
+          margin: 0;
+        }
+
+        .header-actions {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+        }
+
+        .add-btn {
+          background: #007bff;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: background-color 0.2s;
+        }
+
+        .add-btn:hover {
+          background: #0056b3;
+        }
+
+        /* Import button styles removed with demo feature */
+
+        .refresh-btn {
+          background: #6c757d;
+          color: white;
+          border: none;
+          padding: 10px 12px;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .refresh-btn:hover {
+          background: #545b62;
+        }
+
+        .search-section {
+          margin-bottom: 20px;
+        }
+
+        .search-input-group {
+          position: relative;
+          max-width: 400px;
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #666;
+          z-index: 1;
+        }
+
+        .search-loading {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 10px 40px 10px 40px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          font-size: 14px;
+          transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .search-input:disabled {
+          background-color: #f8f9fa;
+          cursor: not-allowed;
+        }
+
+        .students-table-container {
+          background: white;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .students-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .students-table th,
+        .students-table td {
+          padding: 12px;
+          text-align: left;
+          border-bottom: 1px solid #eee;
+        }
+
+        .students-table th {
+          background: #f8f9fa;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .status {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .status.active {
+          background: #d4edda;
+          color: #155724;
+        }
+
+        .status.inactive {
+          background: #f8d7da;
+          color: #721c24;
+        }
+
+        .actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .view-btn,
+        .edit-btn,
+        .delete-btn {
+          padding: 6px 8px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+        }
+
+        .view-btn {
+          background: #17a2b8;
+          color: white;
+        }
+
+        .view-btn:hover {
+          background: #138496;
+        }
+
+        .edit-btn {
+          background: #ffc107;
+          color: #212529;
+        }
+
+        .edit-btn:hover {
+          background: #e0a800;
+        }
+
+        .delete-btn {
+          background: #dc3545;
+          color: white;
+        }
+
+        .delete-btn:hover {
+          background: #c82333;
+        }
+
+        .error-row,
+        .empty-row {
+          text-align: center;
+          padding: 40px 20px;
+        }
+
+        .error-content,
+        .empty-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .error-content p {
+          color: #dc3545;
+          margin: 0;
+          font-weight: 500;
+        }
+
+        .empty-content p {
+          color: #666;
+          margin: 0;
+          font-size: 16px;
+        }
+
+        .clear-search-btn {
+          background: #007bff;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: background-color 0.2s;
+        }
+
+        .clear-search-btn:hover {
+          background: #0056b3;
+        }
+
+        .pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 16px;
+          margin-top: 20px;
+          padding: 20px;
+        }
+
+        .pagination-btn {
+          background: #3498db;
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 5px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+          background: #2980b9;
+        }
+
+        .pagination-btn:disabled {
+          background: #bdc3c7;
+          cursor: not-allowed;
+        }
+
+        .pagination-info {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .total-records {
+          font-size: 12px;
+          color: #6c757d;
+        }
+
+        .loading {
+          text-align: center;
+          padding: 40px;
+          color: #666;
+        }
+      `}</style>
+
+      {/* Student Form Modal */}
+      {isFormOpen && (
+        <StudentForm
+          student={selectedStudent}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormCancel}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="modal-overlay">
+          <div className="delete-modal">
+            <div className="modal-header">
+              <h3>Confirm Delete</h3>
+              <button 
+                onClick={() => setShowDeleteConfirm(null)}
+                className="close-btn"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="warning-icon">
+                ⚠️
+              </div>
+              <p>Are you sure you want to delete this student?</p>
+              <p className="warning-text">This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button 
+                onClick={() => setShowDeleteConfirm(null)}
+                className="cancel-btn"
+              >
+                Cancel
+              </button>
+              <LoadingButton
+                 onClick={() => confirmDeleteStudent(showDeleteConfirm)}
+                 loading={isActionLoading(`delete-${showDeleteConfirm}`)}
+                 className="confirm-delete-btn"
+               >
+                 Delete Student
+               </LoadingButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .delete-modal {
+          background: white;
+          border-radius: 10px;
+          padding: 0;
+          max-width: 400px;
+          width: 90%;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px;
+          border-bottom: 1px solid #e1e8ed;
+        }
+
+        .modal-header h3 {
+          margin: 0;
+          color: #2c3e50;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 18px;
+          cursor: pointer;
+          color: #6c757d;
+          padding: 5px;
+        }
+
+        .close-btn:hover {
+          color: #dc3545;
+        }
+
+        .modal-body {
+          padding: 20px;
+          text-align: center;
+        }
+
+        .warning-icon {
+          font-size: 48px;
+          margin-bottom: 15px;
+        }
+
+        .modal-body p {
+          margin: 10px 0;
+          color: #2c3e50;
+        }
+
+        .warning-text {
+          font-size: 14px;
+          color: #6c757d;
+        }
+
+        .modal-actions {
+          display: flex;
+          gap: 10px;
+          padding: 20px;
+          border-top: 1px solid #e1e8ed;
+          justify-content: flex-end;
+        }
+
+        .cancel-btn {
+          background: #6c757d;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .cancel-btn:hover {
+          background: #545b62;
+        }
+
+        .confirm-delete-btn {
+          background: #dc3545;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .confirm-delete-btn:hover {
+          background: #c82333;
+        }
+      `}</style>
     </div>
   );
 }

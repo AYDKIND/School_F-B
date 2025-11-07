@@ -1,88 +1,85 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { FaCalendarAlt, FaBook, FaUserGraduate, FaChalkboardTeacher, FaDownload } from 'react-icons/fa';
+import { generalAPI, coursesAPI } from '../../services/api.js';
+import { useNotification } from '../../hooks/useNotification.js';
 import './Academic.css';
 
 const Academic = () => {
   const [activeTab, setActiveTab] = useState('sessions');
+  const { showNotification } = useNotification();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const academicSessions = [
-    {
-      id: 1,
-      year: '2023-2024',
-      startDate: 'April 1, 2023',
-      endDate: 'March 31, 2024',
-      highlights: [
-        'New STEM curriculum implementation',
-        'Enhanced digital learning resources',
-        'Expanded extracurricular activities'
-      ]
-    },
-    {
-      id: 2,
-      year: '2022-2023',
-      startDate: 'April 1, 2022',
-      endDate: 'March 31, 2023',
-      highlights: [
-        'Introduction of coding classes',
-        'Sports excellence program launched',
-        'Cultural exchange program with international schools'
-      ]
-    }
-  ];
+  const [academicSessions, setAcademicSessions] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [documents, setDocuments] = useState([]);
 
-  const departments = [
-    {
-      id: 1,
-      name: 'Science Department',
-      head: 'Mr. Rajesh Yadav',
-      subjects: ['Physics', 'Chemistry', 'Biology', 'Computer Science']
-    },
-    {
-      id: 2,
-      name: 'Mathematics Department',
-      head: 'Mrs. Sunita Yadav',
-      subjects: ['Algebra', 'Geometry', 'Calculus', 'Statistics']
-    },
-    {
-      id: 3,
-      name: 'Languages Department',
-      head: 'Mr. Anand Kumar',
-      subjects: ['Hindi', 'English', 'Sanskrit']
-    },
-    {
-      id: 4,
-      name: 'Social Sciences Department',
-      head: 'Mr. Meera Patel',
-      subjects: ['History', 'Geography', 'Civics', 'Economics']
-    }
-  ];
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Load events as academic sessions (fallback-friendly mapping)
+        const eventsRes = await generalAPI.getEvents();
+        const events = Array.isArray(eventsRes.data) ? eventsRes.data : (eventsRes.data?.events || []);
+        const mappedSessions = (events || []).map((evt, idx) => {
+          const start = evt.startDate || evt.date || evt.start || evt.createdAt;
+          const end = evt.endDate || evt.end || evt.updatedAt;
+          const startStr = start ? new Date(start).toLocaleDateString() : 'TBD';
+          const endStr = end ? new Date(end).toLocaleDateString() : 'TBD';
+          const year = start ? `${new Date(start).getFullYear()}` : (evt.year || 'Upcoming');
+          const highlights = [
+            evt.title || evt.name || 'Academic event',
+            evt.description || evt.details || ''
+          ].filter(Boolean);
+          return {
+            id: evt._id || evt.id || idx + 1,
+            year,
+            startDate: startStr,
+            endDate: endStr,
+            highlights,
+          };
+        });
+        setAcademicSessions(mappedSessions.length ? mappedSessions : []);
 
-  const documents = [
-    {
-      id: 1,
-      name: 'Academic Calendar 2023-24',
-      type: 'PDF',
-      size: '1.2 MB'
-    },
-    {
-      id: 2,
-      name: 'Syllabus - All Classes',
-      type: 'PDF',
-      size: '3.5 MB'
-    },
-    {
-      id: 3,
-      name: 'Exam Schedule - Term 1',
-      type: 'PDF',
-      size: '0.8 MB'
-    },
-    {
-      id: 4,
-      name: 'Holiday List 2023-24',
-      type: 'PDF',
-      size: '0.5 MB'
-    }
-  ];
+        // Build departments from courses API by grouping by course.department
+        const coursesRes = await coursesAPI.getCourses();
+        const courses = Array.isArray(coursesRes.data) ? coursesRes.data : (coursesRes.data?.courses || []);
+        const deptMap = new Map();
+        (courses || []).forEach((c) => {
+          const deptName = c.department || c.dept || 'General';
+          const subjectName = c.name || c.title || c.code || 'Course';
+          if (!deptMap.has(deptName)) {
+            deptMap.set(deptName, { id: deptMap.size + 1, name: deptName, head: '', subjects: [] });
+          }
+          const entry = deptMap.get(deptName);
+          if (!entry.subjects.includes(subjectName)) {
+            entry.subjects.push(subjectName);
+          }
+        });
+        setDepartments(Array.from(deptMap.values()));
+
+        // Load academic documents via notices as downloadable references
+        const noticesRes = await generalAPI.getNotices();
+        const notices = Array.isArray(noticesRes.data) ? noticesRes.data : (noticesRes.data?.notices || []);
+        const mappedDocs = (notices || []).map((n, idx) => ({
+          id: n._id || n.id || idx + 1,
+          name: n.title || 'Notice',
+          type: 'Notice',
+          size: n.size || '-',
+          url: n.link || n.url || '#',
+        }));
+        setDocuments(mappedDocs);
+      } catch (err) {
+        setError(err.userMessage || 'Failed to load academic data');
+        showNotification(err.userMessage || 'Failed to load academic data', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [showNotification]);
 
   return (
     <main className="academic-page">
@@ -116,15 +113,23 @@ const Academic = () => {
             >
               <FaBook /> Academic Documents
             </button>
+            <Link to="/academic/updates" className="tab-link">
+              <FaUserGraduate /> Academy Updates
+            </Link>
           </div>
 
           <div className="academic-tab-content">
+            {loading && <p>Loading academic information...</p>}
+            {error && !loading && <p className="error-text">{error}</p>}
             {activeTab === 'sessions' && (
               <div className="sessions-content">
                 <h2>Academic Sessions</h2>
                 <p>BBD Academy follows an annual academic calendar. Here are the details of our current and previous academic sessions:</p>
                 
                 <div className="sessions-list">
+                  {academicSessions.length === 0 && !loading && !error && (
+                    <p>No sessions available.</p>
+                  )}
                   {academicSessions.map(session => (
                     <div className="session-card" key={session.id}>
                       <div className="session-header">
@@ -153,10 +158,15 @@ const Academic = () => {
                 <p>Our school has specialized departments with experienced faculty members dedicated to providing quality education:</p>
                 
                 <div className="departments-grid">
+                  {departments.length === 0 && !loading && !error && (
+                    <p>No departments available.</p>
+                  )}
                   {departments.map(dept => (
                     <div className="department-card" key={dept.id}>
                       <h3>{dept.name}</h3>
-                      <p className="department-head"><strong>Head:</strong> {dept.head}</p>
+                      {dept.head && (
+                        <p className="department-head"><strong>Head:</strong> {dept.head}</p>
+                      )}
                       <div className="department-subjects">
                         <h4>Subjects:</h4>
                         <ul>
@@ -177,15 +187,18 @@ const Academic = () => {
                 <p>Download important academic documents and resources:</p>
                 
                 <div className="documents-list">
+                  {documents.length === 0 && !loading && !error && (
+                    <p>No documents available.</p>
+                  )}
                   {documents.map(doc => (
                     <div className="document-item" key={doc.id}>
                       <div className="document-info">
                         <h3>{doc.name}</h3>
                         <p>{doc.type} • {doc.size}</p>
                       </div>
-                      <button className="download-btn">
+                      <a className="download-btn" href={doc.url || '#'} target="_blank" rel="noreferrer">
                         <FaDownload /> Download
-                      </button>
+                      </a>
                     </div>
                   ))}
                 </div>

@@ -7,3 +7,20 @@
 main {
   flex: 1;
 }
+
+/* Accessible skip link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 8px;
+  background: #1a73e8;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  z-index: 1000;
+}
+.skip-link:focus {
+  top: 8px;
+}

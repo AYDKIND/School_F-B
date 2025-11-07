@@ -8,11 +8,10 @@ import jsPDF from 'jspdf';
 const FeePayment = () => {
   const [activeTab, setActiveTab] = useState('card');
   const [studentInfo, setStudentInfo] = useState({
-    studentId: '',
-    studentName: '',
-    class: '',
-    term: '',
-    feeAmount: ''
+    studentId: 'Student ID',
+    studentName: 'Student Name',
+    class: 'Class',
+    feeAmount: 'Fee Amount'
   });
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
@@ -39,7 +38,6 @@ const FeePayment = () => {
       studentId: studentInfo.studentId,
       studentName: studentInfo.studentName,
       class: studentInfo.class,
-      term: studentInfo.term,
       amount: studentInfo.feeAmount,
       paymentMethod: getPaymentMethodName(activeTab)
     });
@@ -77,12 +75,12 @@ const FeePayment = () => {
     doc.text(`Student ID: ${receiptData.studentId}`, marginLeft, 72);
     doc.text(`Student Name: ${receiptData.studentName}`, marginLeft, 80);
     doc.text(`Class: ${receiptData.class}`, marginLeft, 88);
-    doc.text(`Term: ${receiptData.term}`, marginLeft, 96);
+    // Removed term from receipt as requested
 
-    doc.text('Payment Details:', marginLeft, 112);
-    doc.text(`Amount Paid: ₹${receiptData.amount}`, marginLeft, 120);
-    doc.text(`Payment Method: ${receiptData.paymentMethod}`, marginLeft, 128);
-    doc.text('Status: PAID', marginLeft, 136);
+    doc.text('Payment Details:', marginLeft, 104);
+    doc.text(`Amount Paid: ₹${receiptData.amount}`, marginLeft, 112);
+    doc.text(`Payment Method: ${receiptData.paymentMethod}`, marginLeft, 120);
+    doc.text('Status: PAID', marginLeft, 128);
 
     doc.text('Thank you for your payment!', marginLeft, 156);
 
@@ -92,11 +90,10 @@ const FeePayment = () => {
   const resetForm = () => {
     setPaymentComplete(false);
     setStudentInfo({
-      studentId: '',
-      studentName: '',
-      class: '',
-      term: '',
-      feeAmount: ''
+      studentId: 'Student ID',
+      studentName: 'Student Name',
+      class: 'Class',
+      feeAmount: 'Fee Amount'
     });
   };
 
@@ -145,10 +142,6 @@ const FeePayment = () => {
                     <span>{receiptData.class}</span>
                   </div>
                   <div className="receipt-row">
-                    <span>Term:</span>
-                    <span>{receiptData.term}</span>
-                  </div>
-                  <div className="receipt-row">
                     <span>Amount Paid:</span>
                     <span>₹{receiptData.amount}</span>
                   </div>
@@ -184,34 +177,28 @@ const FeePayment = () => {
                     <thead>
                       <tr>
                         <th>Class</th>
-                        <th>Term Fee</th>
                         <th>Annual Fee</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <td>Nursery - KG</td>
-                        <td>₹12,000</td>
                         <td>₹45,000</td>
                       </tr>
                       <tr>
                         <td>Grade 1-5</td>
-                        <td>₹14,000</td>
                         <td>₹54,000</td>
                       </tr>
                       <tr>
                         <td>Grade 6-8</td>
-                        <td>₹17,000</td>
                         <td>₹66,000</td>
                       </tr>
                       <tr>
                         <td>Grade 9-10</td>
-                        <td>₹19,000</td>
                         <td>₹75,000</td>
                       </tr>
                       <tr>
                         <td>Grade 11-12</td>
-                        <td>₹23,000</td>
                         <td>₹90,000</td>
                       </tr>
                     </tbody>

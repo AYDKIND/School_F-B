@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import './Home.css';
 
 const Home = () => {
-  const [backgroundImage, setBackgroundImage] = useState("https://images.pexels.com/photos/2982449/pexels-photo-2982449.jpeg");
+  const [backgroundImage, setBackgroundImage] = useState('https://images.pexels.com/photos/2982449/pexels-photo-2982449.jpeg');
   const fileInputRef = useRef(null);
   const [facilityPhotos, setFacilityPhotos] = useState({ 
     physics: '',

@@ -46,8 +46,8 @@ export default function OnlineClasses() {
     students: []
   });
 
-  const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Geography'];
-  const classOptions = ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
+  const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Social Studies'];
+  const classOptions = ['Class NS','Class LKG','Class UKG','Class 1','Class 2','Class 3','Class 4','Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -63,7 +63,8 @@ export default function OnlineClasses() {
       ...formData,
       id: Date.now(),
       status: 'scheduled',
-      students: Math.floor(Math.random() * 35) + 15, // Random for demo
+      // Use explicit students count; avoid demo randomization
+      students: Array.isArray(formData.students) ? formData.students.length : 0,
       meetingLink: formData.platform === 'zoom' 
         ? `https://zoom.us/j/${Math.floor(Math.random() * 1000000000)}`
         : `https://meet.google.com/${Math.random().toString(36).substr(2, 9)}`

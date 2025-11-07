@@ -1,271 +1,465 @@
-import React from 'react';
-import { FaUsers, FaChalkboardTeacher, FaBook, FaRupeeSign, FaBell, FaUserPlus, FaChartBar, FaCreditCard } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  FaUsers, 
+  FaChalkboardTeacher, 
+  FaGraduationCap, 
+  FaMoneyBillWave,
+  FaCalendarAlt,
+  FaBus,
+  FaBook,
+  FaBell,
+  FaTasks,
+  FaChartLine,
+  FaClock,
+  FaUserCheck,
+  FaGraduationCap as FaStudentEnrollment,
+  FaChartBar
+} from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
+import './AdminDashboard.css';
+import { adminAPI } from '../../services/api.js';
 
 export default function AdminDashboard() {
-  // Sample data for dashboard
-  const stats = [
-    { title: 'Total Students', count: 1250, icon: <FaUsers />, color: '#4285F4' },
-    { title: 'Total Faculty', count: 85, icon: <FaChalkboardTeacher />, color: '#EA4335' },
-    { title: 'Active Courses', count: 42, icon: <FaBook />, color: '#FBBC05' },
-    { title: 'Revenue (Monthly)', count: '₹ 28.5L', icon: <FaRupeeSign />, color: '#34A853' }
-  ];
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [dashboardData, setDashboardData] = useState({
+    stats: {
+      totalStudents: 0,
+      totalFaculty: 0,
+      activeCourses: 0,
+      monthlyRevenue: '₹ 0'
+    },
+    recentNotifications: [],
+    pendingTasks: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const recentNotifications = [
-    { id: 1, message: 'New admission request from Rahul Yadav', time: '10 minutes ago' },
-    { id: 2, message: 'Fee payment received from Priya Patel', time: '1 hour ago' },
-    { id: 3, message: 'New faculty application submitted', time: '3 hours ago' },
-    { id: 4, message: 'System maintenance scheduled for tonight', time: '5 hours ago' }
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const pendingTasks = [
-    { id: 1, task: 'Review 5 new admission applications', priority: 'High' },
-    { id: 2, task: 'Approve faculty leave requests', priority: 'Medium' },
-    { id: 3, task: 'Update fee structure for next semester', priority: 'High' },
-    { id: 4, task: 'Schedule parent-teacher meeting', priority: 'Medium' }
-  ];
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await adminAPI.getDashboard({ retry: true });
+      const data = response.data;
+
+      if (data.success) {
+        setDashboardData(data.data);
+        setError('');
+      } else {
+        setError(data.message || 'Failed to fetch dashboard data');
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setError(error.userMessage || 'Failed to connect to server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="admin-dashboard">
+        <div className="loading">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  const ErrorBanner = () => error ? (
+    <div className="error">
+      <p>Error loading dashboard stats: {error}</p>
+      <button onClick={fetchDashboardData}>Retry</button>
+    </div>
+  ) : null;
 
   return (
-    <div className="container" style={{ padding: '40px 0' }}>
-      <h1>Admin Dashboard</h1>
-      <p>Welcome back, Admin! Here's your school overview.</p>
-
-      {/* Stats Cards */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
-        gap: '20px',
-        margin: '30px 0'
-      }}>
-        {stats.map((stat, index) => (
-          <div key={index} style={{
-            background: 'white',
-            borderRadius: '8px',
-            padding: '20px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '15px'
-          }}>
-            <div style={{ 
-              width: '50px', 
-              height: '50px', 
-              borderRadius: '50%', 
-              background: stat.color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '1.5rem'
-            }}>
-              {stat.icon}
-            </div>
-            <div>
-              <h3 style={{ margin: '0', fontSize: '1.8rem', fontWeight: '600' }}>{stat.count}</h3>
-              <p style={{ margin: '0', color: '#666' }}>{stat.title}</p>
-            </div>
-          </div>
-        ))}
+    <div className="admin-dashboard">
+      <ErrorBanner />
+      <div className="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p>Welcome back, {user?.firstName || user?.name || 'Admin'}</p>
       </div>
 
-      {/* Two Column Layout */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-        gap: '30px',
-        margin: '30px 0'
-      }}>
+      {/* Stats Grid */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon students">
+            <FaGraduationCap />
+          </div>
+          <div className="stat-content">
+            <h3>{dashboardData.stats.totalStudents}</h3>
+            <p>Total Students</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon faculty">
+            <FaChalkboardTeacher />
+          </div>
+          <div className="stat-content">
+            <h3>{dashboardData.stats.totalFaculty}</h3>
+            <p>Total Faculty</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon courses">
+            <FaBook />
+          </div>
+          <div className="stat-content">
+            <h3>{dashboardData.stats.activeCourses}</h3>
+            <p>Active Courses</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon revenue">
+            <FaMoneyBillWave />
+          </div>
+          <div className="stat-content">
+            <h3>{dashboardData.stats.monthlyRevenue}</h3>
+            <p>Monthly Revenue</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Dashboard Content Grid */}
+      <div className="dashboard-content">
         {/* Recent Notifications */}
-        <div style={{
-          background: 'white',
-          borderRadius: '8px',
-          padding: '20px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.08)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-            <FaBell style={{ color: '#1a237e' }} />
-            <h2 style={{ margin: '0', fontSize: '1.2rem' }}>Recent Notifications</h2>
+        <div className="dashboard-card">
+          <div className="card-header">
+            <h3><FaBell /> Recent Notifications</h3>
           </div>
-          <div>
-            {recentNotifications.map(notification => (
-              <div key={notification.id} style={{ 
-                padding: '12px 0', 
-                borderBottom: '1px solid #f0f0f0',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '5px'
-              }}>
-                <p style={{ margin: '0', fontWeight: '500' }}>{notification.message}</p>
-                <span style={{ fontSize: '0.8rem', color: '#888' }}>{notification.time}</span>
+          <div className="card-content">
+            {dashboardData.recentNotifications.length > 0 ? (
+              <div className="notifications-list">
+                {dashboardData.recentNotifications.map((notification) => (
+                  <div key={notification.id} className="notification-item">
+                    <div className={`notification-type ${notification.type}`}></div>
+                    <div className="notification-content">
+                      <p>{notification.message}</p>
+                      <span className="notification-time">{notification.time}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <p className="no-data">No recent notifications</p>
+            )}
           </div>
-          <button style={{
-            background: 'none',
-            border: 'none',
-            color: '#1a237e',
-            fontWeight: '500',
-            padding: '10px 0',
-            cursor: 'pointer',
-            marginTop: '10px'
-          }}>
-            View All Notifications
-          </button>
         </div>
 
         {/* Pending Tasks */}
-        <div style={{
-          background: 'white',
-          borderRadius: '8px',
-          padding: '20px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.08)'
-        }}>
-          <h2 style={{ margin: '0 0 15px 0', fontSize: '1.2rem' }}>Pending Tasks</h2>
-          <div>
-            {pendingTasks.map(task => (
-              <div key={task.id} style={{ 
-                padding: '12px 0', 
-                borderBottom: '1px solid #f0f0f0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <p style={{ margin: '0' }}>{task.task}</p>
-                <span style={{ 
-                  fontSize: '0.8rem', 
-                  padding: '3px 8px', 
-                  borderRadius: '4px',
-                  background: task.priority === 'High' ? '#ffebee' : '#e8f5e9',
-                  color: task.priority === 'High' ? '#c62828' : '#2e7d32'
-                }}>
-                  {task.priority}
-                </span>
-              </div>
-            ))}
+        <div className="dashboard-card">
+          <div className="card-header">
+            <h3><FaTasks /> Pending Tasks</h3>
           </div>
-          <button style={{
-            background: '#1a237e',
-            border: 'none',
-            color: 'white',
-            fontWeight: '500',
-            padding: '10px 15px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginTop: '15px'
-          }}>
-            Complete Tasks
-          </button>
+          <div className="card-content">
+            {dashboardData.pendingTasks.length > 0 ? (
+              <div className="tasks-list">
+                {dashboardData.pendingTasks.map((task) => (
+                  <div key={task.id} className="task-item">
+                    <div className="task-content">
+                      <p>{task.task}</p>
+                      <span className={`task-priority ${task.priority.toLowerCase()}`}>
+                        {task.priority} Priority
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-data">No pending tasks</p>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="dashboard-card">
+          <div className="card-header">
+            <h3><FaChartLine /> Quick Actions</h3>
+          </div>
+          <div className="card-content">
+            <div className="quick-actions">
+              <button className="action-btn" onClick={() => navigate('/admin/manage-students')}>
+                <FaUsers /> Manage Students
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/manage-faculty')}>
+                <FaChalkboardTeacher /> Manage Faculty
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/manage-courses')}>
+                <FaBook /> Manage Courses
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/schedule-manager')}>
+                <FaClock /> Schedule Manager
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/faculty-assignment')}>
+                <FaUserCheck /> Faculty Assignment
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/student-enrollment')}>
+                <FaStudentEnrollment /> Student Enrollment
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/reports')}>
+                <FaChartBar /> Reports & Analytics
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/fee-management')}>
+                <FaMoneyBillWave /> Fee Management
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/academic-calendar')}>
+                <FaCalendarAlt /> Academic Calendar
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/transport-management')}>
+                <FaBus /> Transport Management
+              </button>
+              <button className="action-btn" onClick={() => navigate('/admin/grades')}>
+                <FaGraduationCap /> Grade Management
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div style={{
-        background: 'white',
-        borderRadius: '8px',
-        padding: '20px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-        marginTop: '30px'
-      }}>
-        <h2 style={{ margin: '0 0 20px 0', fontSize: '1.2rem' }}>Quick Actions</h2>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-          gap: '15px'
-        }}>
-          <Link to="/admin/admissions" style={{ textDecoration: 'none' }}>
-            <div style={{
-              background: '#f8f9fa',
-              borderRadius: '6px',
-              padding: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              border: '1px solid #e9ecef'
-            }}>
-              <div style={{ 
-                width: '40px', 
-                height: '40px', 
-                borderRadius: '50%', 
-                background: '#4285F4',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white'
-              }}>
-                <FaUserPlus />
-              </div>
-              <div>
-                <h4 style={{ margin: '0', color: '#333', fontSize: '0.9rem' }}>Admissions</h4>
-                <p style={{ margin: '0', color: '#666', fontSize: '0.8rem' }}>Manage applications</p>
-              </div>
-            </div>
-          </Link>
+      <style>{`
+        .admin-dashboard {
+          padding: 20px;
+          background: #f8f9fa;
+          min-height: 100vh;
+        }
 
-          <Link to="/admin/fee-management" style={{ textDecoration: 'none' }}>
-            <div style={{
-              background: '#f8f9fa',
-              borderRadius: '6px',
-              padding: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              border: '1px solid #e9ecef'
-            }}>
-              <div style={{ 
-                width: '40px', 
-                height: '40px', 
-                borderRadius: '50%', 
-                background: '#34A853',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white'
-              }}>
-                <FaCreditCard />
-              </div>
-              <div>
-                <h4 style={{ margin: '0', color: '#333', fontSize: '0.9rem' }}>Fee Management</h4>
-                <p style={{ margin: '0', color: '#666', fontSize: '0.8rem' }}>Track payments</p>
-              </div>
-            </div>
-          </Link>
+        .loading, .error {
+          text-align: center;
+          padding: 40px;
+          background: white;
+          border-radius: 8px;
+          margin: 20px 0;
+        }
 
-          <Link to="/admin/reports" style={{ textDecoration: 'none' }}>
-            <div style={{
-              background: '#f8f9fa',
-              borderRadius: '6px',
-              padding: '15px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              border: '1px solid #e9ecef'
-            }}>
-              <div style={{ 
-                width: '40px', 
-                height: '40px', 
-                borderRadius: '50%', 
-                background: '#EA4335',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white'
-              }}>
-                <FaChartBar />
-              </div>
-              <div>
-                <h4 style={{ margin: '0', color: '#333', fontSize: '0.9rem' }}>Reports</h4>
-                <p style={{ margin: '0', color: '#666', fontSize: '0.8rem' }}>Analytics & insights</p>
-              </div>
-            </div>
-          </Link>
-        </div>
-      </div>
+        .error button {
+          background: #007bff;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-top: 10px;
+        }
+
+        .dashboard-header {
+          margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+          color: #333;
+          margin-bottom: 5px;
+          font-size: 2.5rem;
+        }
+
+        .dashboard-header p {
+          color: #666;
+          font-size: 16px;
+        }
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+
+        .stat-card {
+          background: white;
+          padding: 25px;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+          padding: 20px;
+          border-radius: 50%;
+          font-size: 28px;
+          color: white;
+        }
+
+        .stat-icon.students { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-icon.faculty { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-icon.courses { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-icon.revenue { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+        .stat-content h3 {
+          margin: 0;
+          font-size: 32px;
+          color: #333;
+          font-weight: 700;
+        }
+
+        .stat-content p {
+          margin: 5px 0 0 0;
+          color: #666;
+          font-size: 14px;
+          font-weight: 500;
+        }
+
+        .dashboard-content {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 20px;
+        }
+
+        .dashboard-card {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          overflow: hidden;
+        }
+
+        .card-header {
+          background: #f8f9fa;
+          padding: 20px;
+          border-bottom: 1px solid #e9ecef;
+        }
+
+        .card-header h3 {
+          margin: 0;
+          color: #333;
+          font-size: 18px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .card-content {
+          padding: 20px;
+        }
+
+        .notifications-list, .tasks-list {
+          max-height: 300px;
+          overflow-y: auto;
+        }
+
+        .notification-item, .task-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 15px;
+          padding: 15px 0;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        .notification-item:last-child, .task-item:last-child {
+          border-bottom: none;
+        }
+
+        .notification-type {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          margin-top: 8px;
+          flex-shrink: 0;
+        }
+
+        .notification-type.registration { background: #28a745; }
+        .notification-type.system { background: #007bff; }
+        .notification-type.report { background: #ffc107; }
+
+        .notification-content p, .task-content p {
+          margin: 0 0 5px 0;
+          color: #333;
+          font-size: 14px;
+        }
+
+        .notification-time {
+          color: #666;
+          font-size: 12px;
+        }
+
+        .task-priority {
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+
+        .task-priority.high {
+          background: #fee;
+          color: #dc3545;
+        }
+
+        .task-priority.medium {
+          background: #fff3cd;
+          color: #856404;
+        }
+
+        .task-priority.low {
+          background: #d1ecf1;
+          color: #0c5460;
+        }
+
+        .quick-actions {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 15px;
+        }
+
+        .action-btn {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 15px 20px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: transform 0.2s, box-shadow 0.2s;
+          white-space: nowrap;
+          min-height: 50px;
+        }
+
+        .action-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .no-data {
+          text-align: center;
+          color: #666;
+          font-style: italic;
+          padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+          .admin-dashboard {
+            padding: 15px;
+          }
+          
+          .stats-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .dashboard-content {
+            grid-template-columns: 1fr;
+          }
+          
+          .quick-actions {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </div>
   );
 }

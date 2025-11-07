@@ -1,5 +1,5 @@
 .admissions-hero {
-  background: linear-gradient(rgba(0, 32, 96, 0.8), rgba(0, 32, 96, 0.8)), url('/images/campus.jpg');
+  background: linear-gradient(rgba(0, 32, 96, 0.8), rgba(0, 32, 96, 0.8)), url('/School_BBD/images/campus.svg');
   background-size: cover;
   background-position: center;
   color: white;
@@ -20,12 +20,14 @@
 
 .admissions-content {
   padding: 60px 0;
+  background: #fafafa;
 }
 
 .admissions-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 32px;
+  align-items: start;
 }
 
 .admissions-info h2,
@@ -64,10 +66,11 @@
 }
 
 .download-section {
-  background-color: #f5f5f5;
+  background-color: #f7f9fc;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-top: 30px;
+  border: 1px solid #e6eaf2;
 }
 
 .download-btn {
@@ -89,10 +92,11 @@
 }
 
 .admissions-form-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 28px;
+  border: 1px solid #eef2f7;
 }
 
 .admissions-form {
@@ -121,24 +125,40 @@
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px 14px;
+  border: 1px solid #d7dbe3;
+  border-radius: 8px;
   font-size: 1rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-group textarea {
-  min-height: 100px;
+  min-height: 110px;
   resize: vertical;
 }
 
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #6f8ad8;
+  box-shadow: 0 0 0 3px rgba(111, 138, 216, 0.2);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #9aa3b2;
+}
+
 .file-upload {
-  border: 2px dashed #ddd;
-  padding: 20px;
+  border: 2px dashed #cfd6e5;
+  padding: 22px;
   text-align: center;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
   position: relative;
+  background: #fafcff;
 }
 
 .file-upload input {
@@ -152,9 +172,9 @@
 }
 
 .upload-icon {
-  font-size: 24px;
+  font-size: 22px;
   color: #002060;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .form-actions {
@@ -163,18 +183,19 @@
 
 .submit-btn {
   background-color: #002060;
-  color: white;
+  color: #fff;
   border: none;
-  padding: 12px 24px;
-  border-radius: 4px;
+  padding: 12px 20px;
+  border-radius: 10px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: transform 0.08s ease, background-color 0.2s ease;
   width: 100%;
 }
 
 .submit-btn:hover {
   background-color: #001540;
+  transform: translateY(-1px);
 }
 
 .form-success {
@@ -206,222 +227,118 @@
 
 .btn-primary {
   background-color: #002060;
-  color: white;
+  color: #fff;
   border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
+  padding: 10px 18px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: transform 0.08s ease, background-color 0.2s ease;
 }
 
 .btn-primary:hover {
   background-color: #001540;
+  transform: translateY(-1px);
 }
 
-/* OTP Verification Styles */
+/* OTP verification section styling */
 .otp-verification-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
   background: #fff;
+  border: 1px solid #eef2f7;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.optional-label {
-  color: #666;
-  font-size: 0.85em;
-  font-weight: normal;
-}
-
-.proceed-info {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-left: 4px solid #007bff;
-  border-radius: 4px;
-  color: #495057;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .verification-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 }
 
 .security-icon {
-  font-size: 48px;
   color: #002060;
-  margin-bottom: 15px;
-}
-
-.verification-header h2 {
-  color: #002060;
-  margin-bottom: 10px;
-}
-
-.verification-header p {
-  color: #666;
-  font-size: 1rem;
+  font-size: 28px;
+  margin-bottom: 8px;
 }
 
 .contact-verification-form {
-  max-width: 500px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .verification-step {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid #e9ecef;
+  background: #fafcff;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  padding: 16px;
 }
 
 .step-header {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .step-icon {
-  font-size: 20px;
   color: #002060;
-  margin-right: 10px;
 }
 
-.step-header h3 {
-  color: #002060;
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.input-group {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.input-group input {
-  flex: 1;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.send-otp-btn, .verify-otp-btn {
-  background-color: #002060;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  transition: all 0.3s ease;
-}
-
-.send-otp-btn:hover, .verify-otp-btn:hover {
-  background-color: #001540;
-}
-
-.send-otp-btn:disabled, .verify-otp-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
+.input-group,
 .otp-input-group {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #fff;
-  border-radius: 4px;
-  border: 1px solid #ddd;
 }
 
+.input-group input,
 .otp-input-group input {
   flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  text-align: center;
-  letter-spacing: 2px;
 }
 
-.verify-otp-btn.verified {
-  background-color: #4CAF50;
-}
-
-.proceed-section {
-  text-align: center;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #e9ecef;
-}
-
+.send-otp-btn,
+.verify-otp-btn,
 .proceed-btn {
-  background-color: #4CAF50;
-  color: white;
+  background: #002060;
+  color: #fff;
   border: none;
-  padding: 15px 30px;
-  border-radius: 4px;
-  font-size: 1.1rem;
+  padding: 10px 14px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: transform 0.08s ease, background-color 0.2s ease;
+}
+
+.send-otp-btn:hover,
+.verify-otp-btn:hover,
+.proceed-btn:hover {
+  background: #001540;
+  transform: translateY(-1px);
+}
+
+.optional-label {
+  color: #6f7c91;
   font-weight: 500;
 }
 
-.proceed-btn:hover {
-  background-color: #45a049;
+.proceed-section {
+  border-top: 1px dashed #e3e7ef;
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
-.proceed-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+.proceed-info {
+  color: #4b5565;
+  margin-bottom: 8px;
 }
 
 .verified-header {
-  text-align: center;
-  margin-bottom: 25px;
-  padding: 20px;
-  background-color: #f0f8f0;
-  border-radius: 8px;
-  border: 1px solid #4CAF50;
+  background: #fafcff;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .verified-icon {
-  font-size: 32px;
-  color: #4CAF50;
-  margin-bottom: 10px;
-}
-
-.verified-header h2 {
-  color: #4CAF50;
-  margin-bottom: 10px;
-}
-
-.verified-header p {
-  color: #666;
-  margin: 0;
-}
-
-/* Loading states */
-.send-otp-btn:disabled,
-.verify-otp-btn:disabled {
-  opacity: 0.7;
-}
-
-/* Success states */
-.verification-step.verified {
-  border-color: #4CAF50;
-  background-color: #f0f8f0;
-}
-
-.verification-step.verified .step-icon {
   color: #4CAF50;
 }
 
@@ -437,20 +354,9 @@
   .admissions-hero h1 {
     font-size: 2.5rem;
   }
-  
-  .input-group {
-    flex-direction: column;
-  }
-  
+
+  .input-group,
   .otp-input-group {
     flex-direction: column;
-  }
-  
-  .contact-verification-form {
-    max-width: 100%;
-  }
-  
-  .security-icon {
-    font-size: 36px;
   }
 }

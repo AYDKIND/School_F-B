@@ -1,17 +1,39 @@
-import React, { useState } from 'react';
-
-const initialRecords = [
-  { date: '2025-10-01', subject: 'Mathematics', status: 'Present' },
-  { date: '2025-10-02', subject: 'Science', status: 'Absent' },
-  { date: '2025-10-03', subject: 'English', status: 'Present' },
-  { date: '2025-10-04', subject: 'History', status: 'Present' },
-  { date: '2025-10-05', subject: 'Computer Science', status: 'Present' },
-];
+import React, { useEffect, useState } from 'react';
+import { studentAPI } from '../../services/api.js';
 
 export default function StudentAttendance() {
+  const [records, setRecords] = useState([]);
   const [filter, setFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filtered = initialRecords.filter(r =>
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const res = await studentAPI.getAttendance();
+        const data = res.data?.data;
+        // Expect backend to return array in future; currently may be placeholder
+        const list = Array.isArray(data) ? data : [];
+        const mapped = list.map(r => ({
+          date: r.date || r.attendanceDate || '',
+          subject: r.subject || r.course || '-',
+          status: r.status || 'Present'
+        }));
+        setRecords(mapped);
+      } catch (err) {
+        console.error('Attendance fetch error:', err);
+        setError(err.userMessage || 'Failed to load attendance');
+        setRecords([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAttendance();
+  }, []);
+
+  const filtered = records.filter(r =>
     filter === 'All' ? true : r.status === filter
   );
 
@@ -19,6 +41,9 @@ export default function StudentAttendance() {
     <div className="container" style={{ padding: '100px 0' }}>
       <h1>Attendance Status</h1>
       <p>View your daily attendance status across subjects.</p>
+
+      {loading && <div>Loading attendance...</div>}
+      {error && !loading && <div style={{ color: 'red' }}>Error: {error}</div>}
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', margin: '16px 0' }}>
         <label htmlFor="filter"><strong>Filter:</strong></label>
@@ -48,12 +73,15 @@ export default function StudentAttendance() {
                 </td>
               </tr>
             ))}
+            {!loading && filtered.length === 0 && (
+              <tr>
+                <td colSpan="3" style={{ padding: '12px', textAlign: 'center', color: '#666' }}>
+                  No attendance records found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
-      </div>
-
-      <div style={{ marginTop: 16, fontSize: '0.95rem', color: '#555' }}>
-        Tip: This is sample data. Integrate with your backend attendance API to show real records.
       </div>
     </div>
   );

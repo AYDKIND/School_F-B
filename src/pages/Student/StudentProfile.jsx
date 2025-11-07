@@ -1,32 +1,85 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FaUserCheck } from 'react-icons/fa';
+import { studentAPI } from '../../services/api.js';
 
 export default function StudentProfile() {
-  const profile = {
-    name: 'Rahul Yadav',
-    class: '10-A',
-    rollNo: 'BBD10001',
-    email: 'rahul.yadav@bbdacademy.edu.in',
-    phone: '+91 98765 43210',
-    guardian: 'Mr. Rakesh Yadav',
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const normalizeProfile = (raw) => {
+    if (!raw || typeof raw !== 'object') return null;
+    const personal = raw.personal_info || raw.personalInfo || {};
+    const academic = raw.academic_info || raw.academicInfo || {};
+    const contacts = raw.parent_contact || raw.guardian || raw.contacts || {};
+
+    return {
+      name: raw.name || personal.name || 'Unknown',
+      class: raw.class || academic.class || academic.className || '-',
+      rollNo: raw.rollNo || academic.rollNo || raw.admissionNumber || '-',
+      email: raw.email || personal.email || '-',
+      phone: raw.phone || personal.phone || '-',
+      guardian: contacts.name || raw.guardianName || '-',
+    };
   };
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const res = await studentAPI.getProfile();
+        const data = res.data?.data ?? res.data ?? null;
+        const normalized = normalizeProfile(data);
+        if (mounted) setProfile(normalized);
+      } catch (err) {
+        const msg = err.userMessage || err.message || 'Failed to load profile';
+        if (mounted) {
+          setError(msg);
+          setProfile(null);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  const emptyState = useMemo(() => (
+    <div style={{ background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
+      <p style={{ margin: 0, color: '#666' }}>Profile data is not available.</p>
+    </div>
+  ), []);
 
   return (
     <div className="container" style={{ padding: '40px 0' }}>
       <h1>Profile</h1>
       <p>Your student information and contact details.</p>
 
-      <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.08)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginTop: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <FaUserCheck style={{ color: '#1a237e', fontSize: '1.5rem' }} />
-          <h2 style={{ margin: 0 }}>{profile.name}</h2>
+      {loading && (
+        <p style={{ color: '#666' }}>Loading profile...</p>
+      )}
+      {error && !loading && (
+        <p style={{ color: 'red' }}>Error: {error}</p>
+      )}
+
+      {!loading && !error && (!profile ? (
+        emptyState
+      ) : (
+        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.08)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginTop: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <FaUserCheck style={{ color: '#1a237e', fontSize: '1.5rem' }} />
+            <h2 style={{ margin: 0 }}>{profile.name}</h2>
+          </div>
+          <p><strong>Class:</strong> {profile.class}</p>
+          <p><strong>Roll No:</strong> {profile.rollNo}</p>
+          <p><strong>Email:</strong> {profile.email}</p>
+          <p><strong>Phone:</strong> {profile.phone}</p>
+          <p><strong>Guardian:</strong> {profile.guardian}</p>
         </div>
-        <p><strong>Class:</strong> {profile.class}</p>
-        <p><strong>Roll No:</strong> {profile.rollNo}</p>
-        <p><strong>Email:</strong> {profile.email}</p>
-        <p><strong>Phone:</strong> {profile.phone}</p>
-        <p><strong>Guardian:</strong> {profile.guardian}</p>
-      </div>
+      ))}
     </div>
   );
 }

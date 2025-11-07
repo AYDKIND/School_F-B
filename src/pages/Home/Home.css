@@ -5,7 +5,6 @@
   background-size: cover;
   background-position: center;
   position: relative;
-  min-height: 400px;
 }
 
 .hero-overlay {
@@ -147,12 +146,8 @@
 .feature-card p {
   color: var(--light-text);
 }
-  
-/* Academic Programs Section */
-.courses-preview {
-  padding: 80px 0;
-}
 
+/* Courses Preview Section */
 .courses-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -304,107 +299,26 @@
   }
 }
 
-/* Tablet Responsive */
 @media screen and (max-width: 768px) {
-  .hero {
-    height: 450px;
-  }
-  
-  .hero-content {
-    padding: 0 20px;
-  }
-  
   .hero-content h1 {
     font-size: 36px;
-    line-height: 1.2;
-  }
-  
-  .hero-content h2 {
-    font-size: 20px;
-  }
-  
-  .hero-content p {
-    font-size: 16px;
   }
   
   .courses-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
   }
   
   .testimonials-grid {
     grid-template-columns: 1fr;
   }
-  
-  .hero-buttons {
-    gap: 15px;
-  }
 }
 
-/* Mobile Responsive */
 @media screen and (max-width: 576px) {
-  .hero {
-    height: 400px;
-  }
-  
-  .hero-content {
-    padding: 0 15px;
-  }
-  
-  .hero-content h1 {
-    font-size: 28px;
-    margin-bottom: 10px;
-  }
-  
-  .hero-content h2 {
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-  
-  .hero-content p {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-  
   .features-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
   }
   
   .hero-buttons {
     flex-direction: column;
-    gap: 10px;
-    align-items: center;
-  }
-  
-  .btn-primary, .btn-outline {
-    width: 200px;
-    text-align: center;
-    padding: 12px 20px;
-  }
-}
-
-/* Small Mobile Responsive (iPhone SE, etc.) */
-@media screen and (max-width: 375px) {
-  .hero {
-    height: 350px;
-  }
-  
-  .hero-content h1 {
-    font-size: 24px;
-  }
-  
-  .hero-content h2 {
-    font-size: 14px;
-  }
-  
-  .hero-content p {
-    font-size: 13px;
-  }
-  
-  .btn-primary, .btn-outline {
-    width: 180px;
-    padding: 10px 15px;
-    font-size: 14px;
   }
 }

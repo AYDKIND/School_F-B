@@ -12,10 +12,10 @@ const Footer = () => {
           </Link>
           <p>Providing quality education and shaping the future leaders of tomorrow through innovative teaching methods and a supportive learning environment.</p>
           <div className="social-icons">
-            <a href="https://www.facebook.com/profile.php?id=61560794331178" className="social-icon"><FaFacebook /></a>
-            <a href="https://x.com/BBD_School91532" className="social-icon"><FaTwitter /></a>
-            <a href="https://www.instagram.com/endless.sunil4u/" className="social-icon"><FaInstagram /></a>
-            <a href="https://www.linkedin.com/in/sunil-yadav-b08735390/" className="social-icon"><FaLinkedin /></a>
+            <a href="https://www.facebook.com/profile.php?id=61560794331178" className="social-icon" target="_blank" rel="noopener noreferrer"><FaFacebook /></a>
+            <a href="https://x.com/BBD_School91532" className="social-icon" target="_blank" rel="noopener noreferrer"><FaTwitter /></a>
+            <a href="https://www.instagram.com/endless.sunil4u/" className="social-icon" target="_blank" rel="noopener noreferrer"><FaInstagram /></a>
+            <a href="https://www.linkedin.com/in/sunil-yadav-b08735390/" className="social-icon" target="_blank" rel="noopener noreferrer"><FaLinkedin /></a>
           </div>
         </div>
         

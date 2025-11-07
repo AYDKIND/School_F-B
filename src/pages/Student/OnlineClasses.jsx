@@ -6,7 +6,7 @@ const upcomingClasses = [
   { date: '2025-10-07', time: '09:30 AM', subject: 'English', platform: 'Google Meet', link: '#' },
 ];
 
-export default function OnlineClasses() {
+export default function StudentOnlineClasses() {
   return (
     <div className="container" style={{ padding: '100px 0' }}>
       <h1>Online Classes</h1>

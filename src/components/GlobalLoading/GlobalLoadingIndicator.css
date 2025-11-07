@@ -1,0 +1,106 @@
+.global-loading-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  height: 3px;
+  background-color: transparent;
+  pointer-events: none;
+}
+
+.global-loading-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  width: 0%;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.global-loading-indicator.loading .global-loading-bar {
+  animation: globalProgress 2s infinite;
+}
+
+@keyframes globalProgress {
+  0% {
+    width: 0%;
+    opacity: 1;
+  }
+  50% {
+    width: 70%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
+.global-loading-indicator.complete .global-loading-bar {
+  width: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Request counter (optional, for debugging) */
+.global-loading-counter {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 10001;
+  display: none; /* Hidden by default */
+}
+
+.global-loading-counter.show {
+  display: block;
+}
+
+/* Overlay loading (for critical operations) */
+.global-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.global-loading-overlay .loading-content {
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.global-loading-overlay .loading-message {
+  margin-top: 12px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .global-loading-overlay {
+    background-color: rgba(31, 41, 55, 0.8);
+  }
+  
+  .global-loading-overlay .loading-content {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+  
+  .global-loading-overlay .loading-message {
+    color: #d1d5db;
+  }
+}

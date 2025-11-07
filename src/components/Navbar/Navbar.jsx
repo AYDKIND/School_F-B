@@ -53,15 +53,15 @@ const Navbar = () => {
             <a href="mailto:info@bbdacademy.edu.in"><FaEnvelope /> sunil.bbdacademy@gmail.com</a>
           </div>
           <div className="social-icons">
-            <a href="https://www.facebook.com/profile.php?id=61560794331178" aria-label="Facebook"><FaFacebookF /></a>
-            <a href="https://x.com/BBD_School91532" aria-label="Twitter"><FaTwitter /></a>
-            <a href="https://www.instagram.com/endless.sunil4u/" aria-label="Instagram"><FaInstagram /></a>
-            <a href="https://www.linkedin.com/in/sunil-yadav-b08735390/" aria-label="LinkedIn"><FaLinkedinIn /></a>
+            <a href="https://www.facebook.com/profile.php?id=61560794331178" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><FaFacebookF /></a>
+            <a href="https://x.com/BBD_School91532" aria-label="Twitter" target="_blank" rel="noopener noreferrer"><FaTwitter /></a>
+            <a href="https://www.instagram.com/endless.sunil4u/" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><FaInstagram /></a>
+            <a href="https://www.linkedin.com/in/sunil-yadav-b08735390/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><FaLinkedinIn /></a>
           </div>
         </div>
       </div>
       
-      <nav className="navbar">
+      <nav className="navbar" aria-label="Primary">
         <div className="container navbar-container">
           <div className="logo-container">
             <Link to="/" className="navbar-logo" onClick={closeMenu}>
@@ -69,11 +69,17 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="menu-icon" onClick={toggleMenu}>
+          <button
+            className="menu-icon"
+            onClick={toggleMenu}
+            aria-controls="primary-navigation"
+            aria-expanded={isOpen}
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+          >
             {isOpen ? <FaTimes /> : <FaBars />}
-          </div>
+          </button>
 
-          <ul className={isOpen ? 'nav-menu active' : 'nav-menu'}>
+          <ul id="primary-navigation" className={isOpen ? 'nav-menu active' : 'nav-menu'}>
             <li className="nav-item">
               <NavLink to="/" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={closeMenu}>
                 Home

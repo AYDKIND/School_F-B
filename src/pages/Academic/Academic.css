@@ -30,7 +30,8 @@
   margin-bottom: 40px;
 }
 
-.academic-tabs button {
+.academic-tabs button,
+.academic-tabs a.tab-link {
   background-color: #f5f5f5;
   border: none;
   padding: 12px 24px;
@@ -43,13 +44,16 @@
   align-items: center;
   gap: 8px;
   transition: all 0.3s ease;
+  text-decoration: none;
 }
 
-.academic-tabs button:hover {
+.academic-tabs button:hover,
+.academic-tabs a.tab-link:hover {
   background-color: #e0e0e0;
 }
 
-.academic-tabs button.active {
+.academic-tabs button.active,
+.academic-tabs a.tab-link.active {
   background-color: #1a237e;
   color: white;
 }

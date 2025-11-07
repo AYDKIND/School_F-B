@@ -1,0 +1,30 @@
+.context-nav {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e5ea;
+}
+.context-nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.context-link {
+  color: #444;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.context-link:hover {
+  background: #f1f5fb;
+}
+.context-link.active {
+  background: #e8f0fe;
+  color: #1a73e8;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .context-nav-inner { padding: 6px 12px; }
+}

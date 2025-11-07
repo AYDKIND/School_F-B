@@ -1,51 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaCreditCard, FaUniversity, FaWallet, FaDownload, FaCheckCircle, FaExclamationTriangle, FaClock } from 'react-icons/fa';
+import { studentAPI } from '../../services/api';
 
 export default function FeePayment() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedFee, setSelectedFee] = useState(null);
+  const [fees, setFees] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Sample fee data
-  const feeStructure = [
-    {
-      id: 1,
-      type: 'Tuition Fee',
-      amount: 25000,
-      dueDate: '2024-03-15',
-      status: 'pending',
-      semester: 'Spring 2024',
-      description: 'Semester tuition fee'
-    },
-    {
-      id: 2,
-      type: 'Library Fee',
-      amount: 2000,
-      dueDate: '2024-03-10',
-      status: 'overdue',
-      semester: 'Spring 2024',
-      description: 'Library access and maintenance'
-    },
-    {
-      id: 3,
-      type: 'Lab Fee',
-      amount: 5000,
-      dueDate: '2024-03-20',
-      status: 'pending',
-      semester: 'Spring 2024',
-      description: 'Laboratory equipment and materials'
-    },
-    {
-      id: 4,
-      type: 'Examination Fee',
-      amount: 1500,
-      dueDate: '2024-02-28',
-      status: 'paid',
-      semester: 'Spring 2024',
-      description: 'Mid-term and final examinations',
-      paidDate: '2024-02-25'
-    }
-  ];
+  useEffect(() => {
+    const loadFees = async () => {
+      setIsLoading(true);
+      try {
+        const res = await studentAPI.getFees();
+        const data = Array.isArray(res.data) ? res.data : (res.data?.fees || []);
+        const normalized = data.map(f => ({
+          id: f.id ?? f._id ?? Math.random(),
+          type: f.type ?? f.name ?? 'Fee',
+          amount: Number(f.amount ?? 0),
+          dueDate: f.dueDate ?? new Date().toISOString(),
+          status: f.status ?? 'pending',
+          session: f.session ?? f.semester ?? '',
+          description: f.description ?? '',
+          paidDate: f.paidDate ?? null
+        }));
+        setFees(normalized);
+      } catch (error) {
+        console.error('Failed to load fees', error);
+        setFees([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadFees();
+  }, []);
 
   const paymentHistory = [
     {
@@ -56,14 +45,14 @@ export default function FeePayment() {
       transactionId: 'TXN123456789',
       method: 'Credit Card'
     },
-    {
-      id: 2,
-      type: 'Hostel Fee',
-      amount: 8000,
-      date: '2024-01-10',
-      transactionId: 'TXN123456788',
-      method: 'Net Banking'
-    }
+    // {
+    //   id: 2,
+    //   type: 'Hostel Fee',
+    //   amount: 8000,
+    //   date: '2024-01-10',
+    //   transactionId: 'TXN123456788',
+    //   method: 'Net Banking'
+    // }
   ];
 
   const getStatusColor = (status) => {
@@ -89,18 +78,25 @@ export default function FeePayment() {
     setShowPaymentModal(true);
   };
 
-  const processPayment = () => {
-    // Simulate payment processing
-    alert(`Payment of ₹${selectedFee.amount} processed successfully!`);
-    setShowPaymentModal(false);
-    setSelectedFee(null);
+  const processPayment = async () => {
+    if (!selectedFee) return;
+    try {
+      await studentAPI.payFees({ feeId: selectedFee.id, method: selectedPaymentMethod });
+      alert(`Payment of ₹${selectedFee.amount} processed successfully!`);
+      setFees(prev => prev.map(f => f.id === selectedFee.id ? { ...f, status: 'paid', paidDate: new Date().toISOString() } : f));
+    } catch (error) {
+      alert(error.userMessage || 'Payment failed. Please try again.');
+    } finally {
+      setShowPaymentModal(false);
+      setSelectedFee(null);
+    }
   };
 
-  const totalPending = feeStructure
+  const totalPending = fees
     .filter(fee => fee.status !== 'paid')
     .reduce((sum, fee) => sum + fee.amount, 0);
 
-  const totalPaid = feeStructure
+  const totalPaid = fees
     .filter(fee => fee.status === 'paid')
     .reduce((sum, fee) => sum + fee.amount, 0);
 
@@ -157,9 +153,9 @@ export default function FeePayment() {
         boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
         marginBottom: '30px'
       }}>
-        <h2 style={{ marginBottom: '20px', color: '#333' }}>Current Semester Fees</h2>
+        <h2 style={{ marginBottom: '20px', color: '#333' }}>Current Session Fees</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {feeStructure.map(fee => (
+          {(isLoading ? [] : fees).map(fee => (
             <div key={fee.id} style={{
               border: '1px solid #e9ecef',
               borderRadius: '8px',

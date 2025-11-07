@@ -1,24 +1,185 @@
-import React from 'react';
-import { FaCalendarAlt, FaBook, FaGraduationCap, FaChalkboard, FaFileAlt, FaCreditCard } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import config from '../../config/config.js';
+import { studentAPI } from '../../services/api.js';
+import { FaCalendarAlt, FaBook, FaGraduationCap, FaChalkboard, FaFileAlt, FaCreditCard, FaUsers, FaClipboardCheck, FaCalendarCheck, FaClipboardList } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import './StudentDashboard.css';
 
 export default function StudentDashboard() {
-  // Sample data
-  const upcomingClasses = [
-    { id: 1, subject: 'Mathematics', time: '10:00 AM - 11:00 AM', teacher: 'Mr. Sharma' },
-    { id: 2, subject: 'Science', time: '11:15 AM - 12:15 PM', teacher: 'Mrs. Gupta' },
-    { id: 3, subject: 'English', time: '01:30 PM - 02:30 PM', teacher: 'Ms. Patel' }
-  ];
+  const { token } = useAuth();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const assignments = [
-    { id: 1, subject: 'Mathematics', title: 'Algebra Assignment', dueDate: '15 Oct 2025', status: 'Pending' },
-    { id: 2, subject: 'Science', title: 'Physics Lab Report', dueDate: '18 Oct 2025', status: 'Submitted' }
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await studentAPI.getDashboard();
+      const data = response.data;
+
+      if (data?.success) {
+        setDashboardData(data.data);
+        setError(null);
+      } else {
+        setError(data?.message || 'Failed to fetch dashboard data');
+      }
+    } catch (err) {
+      console.error('Dashboard fetch error:', err);
+      setError(err.userMessage || 'Failed to connect to server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container" style={{ padding: '40px 0', textAlign: 'center' }}>
+        <h1>Student Dashboard</h1>
+        <p>Loading dashboard data...</p>
+      </div>
+    );
+  }
+
+  if (error && !dashboardData) {
+    return (
+      <div className="container" style={{ padding: '40px 0', textAlign: 'center' }}>
+        <h1>Student Dashboard</h1>
+        <p style={{ color: 'red' }}>Error: {error}</p>
+        <button onClick={fetchDashboardData} style={{ padding: '10px 20px', background: '#1a237e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  const upcomingClasses = dashboardData?.todaysClasses || [];
+  const assignments = dashboardData?.assignments?.list || [];
 
   return (
     <div className="container" style={{ padding: '40px 0' }}>
       <h1>Student Dashboard</h1>
       <p>Welcome back, Student! Here's your academic overview.</p>
+
+      {/* Stats Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '20px',
+        marginBottom: '20px'
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '8px',
+          padding: '20px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+          textAlign: 'center'
+        }}>
+          <div style={{ 
+             width: '50px', 
+             height: '50px', 
+             borderRadius: '50%', 
+             background: '#4285F4',
+             display: 'flex',
+             alignItems: 'center',
+             justifyContent: 'center',
+             color: 'white',
+             fontSize: '1.5rem',
+             margin: '0 auto 10px'
+           }}>
+             <FaCalendarCheck />
+           </div>
+           <h3 style={{ margin: '0 0 5px 0', fontSize: '1.5rem', color: '#333' }}>
+             {dashboardData?.attendanceSummary?.percentage || '0'}%
+           </h3>
+           <p style={{ margin: '0', color: '#666', fontSize: '0.9rem' }}>Attendance</p>
+         </div>
+ 
+         <div style={{
+           background: 'white',
+           borderRadius: '8px',
+           padding: '20px',
+           boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+           textAlign: 'center'
+         }}>
+           <div style={{ 
+             width: '50px', 
+             height: '50px', 
+             borderRadius: '50%', 
+             background: '#34A853',
+             display: 'flex',
+             alignItems: 'center',
+             justifyContent: 'center',
+             color: 'white',
+             fontSize: '1.5rem',
+             margin: '0 auto 10px'
+           }}>
+             <FaBook />
+           </div>
+           <h3 style={{ margin: '0 0 5px 0', fontSize: '1.5rem', color: '#333' }}>
+             {dashboardData?.quickStats?.totalSubjects || '0'}
+           </h3>
+           <p style={{ margin: '0', color: '#666', fontSize: '0.9rem' }}>Subjects</p>
+         </div>
+ 
+         <div style={{
+           background: 'white',
+           borderRadius: '8px',
+           padding: '20px',
+           boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+           textAlign: 'center'
+         }}>
+           <div style={{ 
+             width: '50px', 
+             height: '50px', 
+             borderRadius: '50%', 
+             background: '#FF9800',
+             display: 'flex',
+             alignItems: 'center',
+             justifyContent: 'center',
+             color: 'white',
+             fontSize: '1.5rem',
+             margin: '0 auto 10px'
+           }}>
+             <FaClipboardList />
+           </div>
+           <h3 style={{ margin: '0 0 5px 0', fontSize: '1.5rem', color: '#333' }}>
+             {dashboardData?.quickStats?.pendingAssignments || '0'}
+           </h3>
+           <p style={{ margin: '0', color: '#666', fontSize: '0.9rem' }}>Pending</p>
+         </div>
+ 
+         <div style={{
+           background: 'white',
+           borderRadius: '8px',
+           padding: '20px',
+           boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+           textAlign: 'center'
+         }}>
+           <div style={{ 
+             width: '50px', 
+             height: '50px', 
+             borderRadius: '50%', 
+             background: '#9C27B0',
+             display: 'flex',
+             alignItems: 'center',
+             justifyContent: 'center',
+             color: 'white',
+             fontSize: '1.5rem',
+             margin: '0 auto 10px'
+           }}>
+             <FaGraduationCap />
+           </div>
+           <h3 style={{ margin: '0 0 5px 0', fontSize: '1.5rem', color: '#333' }}>
+             {dashboardData?.quickStats?.averageGrade || 'N/A'}
+           </h3>
+           <p style={{ margin: '0', color: '#666', fontSize: '0.9rem' }}>Avg Grade</p>
+        </div>
+      </div>
 
       {/* Quick Links */}
       <div style={{ 
