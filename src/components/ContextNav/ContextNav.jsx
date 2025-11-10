@@ -7,13 +7,11 @@ const linkSets = {
     { to: '/admin/dashboard', label: 'Dashboard' },
     { to: '/admin/manage-students', label: 'Students' },
     { to: '/admin/manage-faculty', label: 'Faculty' },
-    { to: '/admin/manage-courses', label: 'Courses' },
     { to: '/admin/reports', label: 'Reports' },
   ],
   faculty: [
     { to: '/faculty/dashboard', label: 'Dashboard' },
     { to: '/faculty/attendance', label: 'Attendance' },
-    { to: '/faculty/grades', label: 'Grades' },
     { to: '/faculty/courses', label: 'Courses' },
     { to: '/faculty/online-classes', label: 'Online Classes' },
     { to: '/faculty/profile', label: 'Profile' },

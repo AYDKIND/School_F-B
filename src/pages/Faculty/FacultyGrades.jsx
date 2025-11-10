@@ -21,7 +21,8 @@ import {
 
 export default function FacultyGrades() {
   const E2E = import.meta.env.VITE_E2E_MODE === 'true';
-  const API_BASE = 'http://localhost:5000/api/e2e';
+  // Use env base to route via Vite proxy in dev
+  const API_BASE = `${(import.meta.env.VITE_API_BASE_URL || '/api')}/e2e`;
   // State management
   const [selectedClass, setSelectedClass] = useState('10-A');
   const [selectedSubject, setSelectedSubject] = useState('Mathematics');
@@ -774,7 +775,7 @@ export default function FacultyGrades() {
         </div>
       )}
 
-      <style jsx>{`
+<style>{`
         .faculty-grades {
           padding: 20px;
           max-width: 1400px;

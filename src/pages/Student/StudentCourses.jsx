@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FaBook, FaChalkboardTeacher, FaClock } from 'react-icons/fa';
-import { coursesAPI, generalAPI } from '../../services/api.js';
+import { studentAPI, generalAPI } from '../../services/api.js';
 import config from '../../config/config.js';
 
 export default function StudentCourses() {
@@ -40,23 +40,30 @@ export default function StudentCourses() {
       try {
         setLoading(true);
         setError('');
-        const res = await coursesAPI.getCourses({ retry: true });
+        const res = await studentAPI.getClasses({ retry: true });
         const data = res.data?.data ?? res.data ?? [];
-        const list = Array.isArray(data) ? data : (Array.isArray(data?.courses) ? data.courses : []);
-        const normalized = list.map(normalizeCourse);
+        const list = Array.isArray(data) ? data : (Array.isArray(data?.classes) ? data.classes : []);
+        const normalized = list.map((cl) => ({
+          id: cl._id || cl.id || `${Date.now()}-${Math.random()}`,
+          name: cl.name || `${cl.class || ''} ${cl.section || ''}`.trim() || 'Class',
+          teacher: cl.faculty ? `${cl.faculty.firstName ?? ''} ${cl.faculty.lastName ?? ''}`.trim() : (cl.teacher || 'TBA'),
+          schedule: formatSchedule(cl.schedule),
+          progress: 0,
+          description: cl.description || 'Class details will be available soon.',
+        }));
         if (mounted) setCourses(normalized);
       } catch (err) {
-        // Fallback to public courses when authenticated endpoint fails
+        // Fallback to public subjects when authenticated endpoint fails
         try {
-          const pub = await generalAPI.getPublicCourses();
+          const pub = await generalAPI.getPublicSubjects();
           const pubData = pub.data?.data ?? pub.data ?? [];
-          const normalized = (Array.isArray(pubData) ? pubData : []).map((c) => ({
-            id: c._id || c.id || `${Date.now()}-${Math.random()}`,
-            name: c.name || c.courseName || 'Untitled',
-            teacher: c.department ? `${c.department} Department` : 'TBA',
-            schedule: c.duration || 'To be announced',
+          const normalized = (Array.isArray(pubData) ? pubData : []).map((s) => ({
+            id: s._id || s.id || `${Date.now()}-${Math.random()}`,
+            name: s.name || s.title || 'Subject',
+            teacher: s.department ? `${s.department} Department` : 'TBA',
+            schedule: s.duration || 'To be announced',
             progress: 0,
-            description: c.description || 'Course details will be available soon.',
+            description: s.description || 'Subject details will be available soon.',
           }));
           if (mounted) {
             setCourses(normalized);

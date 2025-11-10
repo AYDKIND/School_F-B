@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLoading } from '../../hooks/useLoading';
 import { useNotification } from '../../hooks/useNotification';
-import { adminAPI, coursesAPI, studentAPI } from '../../services/api.js';
+import { adminAPI, subjectAPI, studentAPI } from '../../services/api.js';
 import './FacultyAssignment.css';
 
 const FacultyAssignment = () => {
@@ -50,15 +50,15 @@ const FacultyAssignment = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [facultyRes, coursesRes, classesRes, assignmentsRes] = await Promise.all([
+      const [facultyRes, subjectsRes, classesRes, assignmentsRes] = await Promise.all([
         adminAPI.getFaculty({ retry: true }),
-        coursesAPI.getCourses({ retry: true }),
+        subjectAPI.getSubjects({ retry: true }),
         studentAPI.getClasses({ retry: true }),
         adminAPI.getAssignments({ retry: true })
       ]);
 
       const facultyData = facultyRes.data?.data || facultyRes.data || [];
-      const coursesData = coursesRes.data?.data || coursesRes.data || [];
+      const coursesData = subjectsRes.data?.data || subjectsRes.data || [];
       const classesData = classesRes.data?.data || classesRes.data || [];
       const assignmentsData = assignmentsRes.data?.data || assignmentsRes.data || [];
 
@@ -75,8 +75,8 @@ const FacultyAssignment = () => {
 
       const normalizedCourses = (coursesData || []).map(c => ({
         id: c._id || c.id,
-        code: c.courseCode || c.code,
-        name: c.courseName || c.name,
+        code: c.subjectCode || c.code,
+        name: c.subjectName || c.name,
         department: c.department,
         credits: c.credits || 0
       }));

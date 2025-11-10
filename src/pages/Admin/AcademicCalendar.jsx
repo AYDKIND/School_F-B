@@ -494,7 +494,7 @@ export default function AcademicCalendar() {
         </div>
       )}
 
-      <style jsx>{`
+<style>{`
         .academic-calendar {
           padding: 20px;
           background: #f8f9fa;

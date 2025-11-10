@@ -2,7 +2,10 @@ import axios from 'axios';
 import config from '../config/config.js';
 
 // Base API configuration
-const API_BASE_URL = config.API_BASE_URL;
+// Force dev to use Vite proxy (`/api`) to avoid direct localhost calls
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.DEV)
+  ? (import.meta.env?.VITE_API_BASE_URL || '/api')
+  : config.API_BASE_URL;
 
 // Loading state management
 let loadingRequests = new Set();
@@ -33,6 +36,12 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Helpful dev log to confirm base URL routing
+if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+  // eslint-disable-next-line no-console
+  console.log('[API] Base URL (dev):', API_BASE_URL);
+}
 
 // Request interceptor to add auth token and track loading
 api.interceptors.request.use(
@@ -259,20 +268,10 @@ export const facultyAPI = {
   // Fetch attendance records with optional query parameters
   // params can include: course, student, date_from, date_to, session
   getAttendance: (params = {}) => api.get('/faculty/attendance', { params }),
-  addGrades: (gradeData) => api.post('/faculty/grades', gradeData),
-  getGrades: (classId) => api.get(`/faculty/grades/${classId}`),
 };
+ 
 
 // Courses API calls
-export const coursesAPI = {
-  getCourses: (config) => api.get('/courses', config),
-  getCourseById: (id, config) => api.get(`/courses/${id}`, config),
-  createCourse: (courseData, config) => api.post('/courses', courseData, config),
-  updateCourse: (id, courseData, config) => api.put(`/courses/${id}`, courseData, config),
-  deleteCourse: (id, config) => api.delete(`/courses/${id}`, config),
-  enrollStudent: (courseId, studentId, config) => api.post(`/courses/${courseId}/enroll`, { studentId }, config),
-  unenrollStudent: (courseId, studentId, config) => api.delete(`/courses/${courseId}/unenroll/${studentId}`, config),
-};
 
 // Subjects API calls
 export const subjectAPI = {
@@ -303,8 +302,6 @@ export const generalAPI = {
   getEvents: () => api.get('/general/events'),
   // Public subjects (basic info only)
   getPublicSubjects: (params = {}) => api.get('/general/subjects/public', { params }),
-  // Public courses (basic info only)
-  getPublicCourses: (params = {}) => api.get('/general/courses/public', { params }),
 };
 
 export default api;

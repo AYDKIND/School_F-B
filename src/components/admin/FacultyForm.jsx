@@ -3,7 +3,7 @@ import { useNotification } from '../../hooks/useNotification';
 import './FacultyForm.css';
 
 const FacultyForm = ({ faculty = null, onSubmit, onCancel }) => {
-  const { showNotification } = useNotification();
+  const { showSuccess, showError } = useNotification();
   const [formData, setFormData] = useState({
     name: faculty?.name || '',
     email: faculty?.email || '',
@@ -59,9 +59,10 @@ const FacultyForm = ({ faculty = null, onSubmit, onCancel }) => {
     try {
       // Delegate API call to parent (ManageFaculty)
       await onSubmit?.(formData);
-      showNotification(faculty ? 'Faculty updated successfully' : 'Faculty added successfully', 'success');
+      showSuccess(faculty ? 'Faculty updated successfully' : 'Faculty added successfully');
     } catch (error) {
-      showNotification(error?.userMessage || 'Failed to save faculty', 'error');
+      const msg = error?.userMessage || error?.response?.data?.message || 'Failed to save faculty';
+      showError(msg);
     } finally {
       setIsSubmitting(false);
     }

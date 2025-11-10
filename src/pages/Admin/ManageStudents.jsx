@@ -125,9 +125,9 @@ export default function ManageStudents() {
 
     setActionLoading(`delete-${studentId}`, true);
     try {
-      await adminAPI.deleteStudent(studentId, { retry: true });
+      await adminAPI.deleteStudent(studentId, { params: { hard: true }, retry: true });
       setStudents(prev => prev.filter(student => student._id !== studentId));
-      showSuccess('Student deleted successfully');
+      showSuccess('Student permanently deleted');
     } catch (err) {
       showError(err.userMessage || 'Failed to delete student');
     } finally {
@@ -659,7 +659,7 @@ export default function ManageStudents() {
         </div>
       )}
 
-      <style jsx>{`
+<style>{`
         .modal-overlay {
           position: fixed;
           top: 0;

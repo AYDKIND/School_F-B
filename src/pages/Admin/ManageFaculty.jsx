@@ -11,7 +11,7 @@ import './ManageFaculty.css';
 export default function ManageFaculty() {
   const { token } = useAuth();
   const { loading, setLoading } = useLoading();
-  const { showNotification } = useNotification();
+  const { showSuccess, showError } = useNotification();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [faculty, setFaculty] = useState([]);
@@ -93,9 +93,12 @@ export default function ManageFaculty() {
 
     try {
       setLoading(true);
-      await adminAPI.deleteFaculty(facultyToDelete._id || facultyToDelete.id);
+      await adminAPI.deleteFaculty(
+        facultyToDelete._id || facultyToDelete.id,
+        { params: { hard: true }, retry: true }
+      );
       
-      showNotification('Faculty member deleted successfully!', 'success');
+      showSuccess('Faculty member permanently deleted!');
       setShowDeleteConfirm(false);
       setFacultyToDelete(null);
       
@@ -103,10 +106,16 @@ export default function ManageFaculty() {
       fetchFaculty(currentPage, searchTerm);
     } catch (error) {
       console.error('Error deleting faculty:', error);
-      showNotification(
-        error.response?.data?.message || 'Failed to delete faculty member',
-        'error'
-      );
+      if (error?.response?.status === 404) {
+        // Treat missing record as already deleted; close modal and refresh
+        showSuccess('Faculty already deleted. Refreshing list…');
+        setShowDeleteConfirm(false);
+        setFacultyToDelete(null);
+        fetchFaculty(currentPage, searchTerm);
+      } else {
+        const msg = error.userMessage || error.response?.data?.message || 'Failed to delete faculty member';
+        showError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -139,17 +148,18 @@ export default function ManageFaculty() {
 
       if (isUpdate) {
         await adminAPI.updateFaculty(selectedFaculty._id || selectedFaculty.id, payload);
-        showNotification('Faculty member updated successfully!', 'success');
+        showSuccess('Faculty member updated successfully!');
       } else {
         await adminAPI.addFaculty(payload);
-        showNotification('Faculty member added successfully!', 'success');
+        showSuccess('Faculty member added successfully!');
       }
       setIsFormOpen(false);
       setSelectedFaculty(null);
       fetchFaculty(currentPage, searchTerm);
     } catch (error) {
       console.error('Error saving faculty:', error);
-      showNotification(error.userMessage || 'Failed to save faculty', 'error');
+      const msg = error.userMessage || error.response?.data?.message || 'Failed to save faculty';
+      showError(msg);
     } finally {
       setLoading(false);
     }
@@ -317,7 +327,7 @@ export default function ManageFaculty() {
         </div>
       )}
 
-      <style jsx>{`
+<style>{`
         .manage-faculty {
           padding: 20px;
         }

@@ -16,7 +16,6 @@ const routeLabels = {
   dashboard: 'Dashboard',
   'manage-students': 'Manage Students',
   'manage-faculty': 'Manage Faculty',
-  'manage-courses': 'Manage Courses',
   'schedule-manager': 'Schedule Manager',
   'faculty-assignment': 'Faculty Assignment',
   'student-enrollment': 'Student Enrollment',

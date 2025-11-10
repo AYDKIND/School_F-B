@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaCalendarAlt, FaBook, FaUserGraduate, FaChalkboardTeacher, FaDownload } from 'react-icons/fa';
-import { generalAPI, coursesAPI } from '../../services/api.js';
+import { generalAPI } from '../../services/api.js';
 import { useNotification } from '../../hooks/useNotification.js';
 import './Academic.css';
 
@@ -43,13 +43,15 @@ const Academic = () => {
         });
         setAcademicSessions(mappedSessions.length ? mappedSessions : []);
 
-        // Build departments from courses API by grouping by course.department
-        const coursesRes = await coursesAPI.getCourses();
-        const courses = Array.isArray(coursesRes.data) ? coursesRes.data : (coursesRes.data?.courses || []);
+        // Build departments from public subjects by grouping by subject.department
+        const subjectsRes = await generalAPI.getPublicSubjects();
+        const subjects = Array.isArray(subjectsRes.data)
+          ? subjectsRes.data
+          : (subjectsRes.data?.subjects || subjectsRes.data?.data || []);
         const deptMap = new Map();
-        (courses || []).forEach((c) => {
-          const deptName = c.department || c.dept || 'General';
-          const subjectName = c.name || c.title || c.code || 'Course';
+        (subjects || []).forEach((s) => {
+          const deptName = s.department || s.dept || s.category || 'General';
+          const subjectName = s.name || s.title || s.code || 'Subject';
           if (!deptMap.has(deptName)) {
             deptMap.set(deptName, { id: deptMap.size + 1, name: deptName, head: '', subjects: [] });
           }

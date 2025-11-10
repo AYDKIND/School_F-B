@@ -7,7 +7,6 @@ import {
   FaMoneyBillWave,
   FaCalendarAlt,
   FaBus,
-  FaBook,
   FaBell,
   FaTasks,
   FaChartLine,
@@ -27,7 +26,6 @@ export default function AdminDashboard() {
     stats: {
       totalStudents: 0,
       totalFaculty: 0,
-      activeCourses: 0,
       monthlyRevenue: '₹ 0'
     },
     recentNotifications: [],
@@ -105,15 +103,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon courses">
-            <FaBook />
-          </div>
-          <div className="stat-content">
-            <h3>{dashboardData.stats.activeCourses}</h3>
-            <p>Active Courses</p>
-          </div>
-        </div>
+
 
         <div className="stat-card">
           <div className="stat-icon revenue">
@@ -189,9 +179,6 @@ export default function AdminDashboard() {
               </button>
               <button className="action-btn" onClick={() => navigate('/admin/manage-faculty')}>
                 <FaChalkboardTeacher /> Manage Faculty
-              </button>
-              <button className="action-btn" onClick={() => navigate('/admin/manage-courses')}>
-                <FaBook /> Manage Courses
               </button>
               <button className="action-btn" onClick={() => navigate('/admin/schedule-manager')}>
                 <FaClock /> Schedule Manager

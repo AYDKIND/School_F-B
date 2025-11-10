@@ -20,7 +20,6 @@ import Gallery from './pages/Gallery/Gallery';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ManageStudents from './pages/Admin/ManageStudents';
 import ManageFaculty from './pages/Admin/ManageFaculty';
-import ManageCourses from './pages/Admin/ManageCourses';
 import ScheduleManager from './pages/Admin/ScheduleManager';
 import FacultyAssignment from './pages/admin/FacultyAssignment';
 import StudentEnrollment from './pages/admin/StudentEnrollment';
@@ -97,7 +96,6 @@ function App() {
             <Route path="/admin/dashboard" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/manage-students" element={<ProtectedRoute roles={["admin"]}><ManageStudents /></ProtectedRoute>} />
             <Route path="/admin/manage-faculty" element={<ProtectedRoute roles={["admin"]}><ManageFaculty /></ProtectedRoute>} />
-            <Route path="/admin/manage-courses" element={<ProtectedRoute roles={["admin"]}><ManageCourses /></ProtectedRoute>} />
             <Route path="/admin/schedule-manager" element={<ProtectedRoute roles={["admin"]}><ScheduleManager /></ProtectedRoute>} />
             <Route path="/admin/faculty-assignment" element={<ProtectedRoute roles={["admin"]}><FacultyAssignment /></ProtectedRoute>} />
             <Route path="/admin/student-enrollment" element={<ProtectedRoute roles={["admin"]}><StudentEnrollment /></ProtectedRoute>} />
@@ -116,7 +114,6 @@ function App() {
             {/* Faculty Routes */}
             <Route path="/faculty/dashboard" element={<ProtectedRoute roles={["faculty"]}><FacultyDashboard /></ProtectedRoute>} />
             <Route path="/faculty/attendance" element={<ProtectedRoute roles={["faculty"]}><FacultyAttendance /></ProtectedRoute>} />
-            <Route path="/faculty/grades" element={<ProtectedRoute roles={["faculty"]}><FacultyGrades /></ProtectedRoute>} />
             <Route path="/faculty/courses" element={<ProtectedRoute roles={["faculty"]}><FacultyCourses /></ProtectedRoute>} />
             <Route path="/faculty/online-classes" element={<ProtectedRoute roles={["faculty"]}><FacultyOnlineClasses /></ProtectedRoute>} />
             <Route path="/faculty/subjects" element={<ProtectedRoute roles={["faculty"]}><SubjectManagement /></ProtectedRoute>} />

@@ -610,7 +610,7 @@ export default function ManageCourses() {
         </div>
       )}
 
-      <style jsx>{`
+<style>{`
         .manage-courses {
           padding: 24px;
           background: #f8f9fa;

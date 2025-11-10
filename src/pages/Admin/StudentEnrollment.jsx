@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { adminAPI, coursesAPI } from '../../services/api.js';
+import { adminAPI, subjectAPI } from '../../services/api.js';
 
 // Minimal implementation aligned with tests in src/tests/StudentEnrollment.test.js
 const StudentEnrollment = () => {
@@ -25,25 +25,25 @@ const StudentEnrollment = () => {
         setLoading(true);
         setError('');
 
-        // Fetch courses
-        const [coursesRes, studentsRes] = await Promise.all([
-          coursesAPI.getCourses({ retry: true }),
+        // Fetch subjects (used as courses replacement)
+        const [subjectsRes, studentsRes] = await Promise.all([
+          subjectAPI.getSubjects({ retry: true }),
           adminAPI.getStudents({ params: { page: 1, limit: 50 } })
         ]);
 
-        const coursesData = Array.isArray(coursesRes.data?.data) ? coursesRes.data.data : [];
-        const mappedCourses = coursesData.map(c => ({
-          id: c._id,
-          name: c.courseName || c.name || 'Untitled',
-          code: c.courseCode || c.code || '-',
-          department: c.department || 'General',
-          instructor: c.faculty ? `${c.faculty.firstName} ${c.faculty.lastName}` : 'Unassigned',
-          capacity: c.maxStudents || c.capacity || 0,
-          enrolled: Array.isArray(c.enrolledStudents) ? c.enrolledStudents.length : (c.enrolled || 0),
-          waitlist: c.waitlistCount || 0,
-          credits: c.credits || 0,
-          schedule: c.schedule || '',
-          status: c.isActive === false ? 'inactive' : (c.enrolledStudents && c.maxStudents && c.enrolledStudents.length >= c.maxStudents ? 'full' : 'active')
+        const subjectsData = Array.isArray(subjectsRes.data?.data) ? subjectsRes.data.data : (Array.isArray(subjectsRes.data) ? subjectsRes.data : []);
+        const mappedCourses = (subjectsData || []).map(s => ({
+          id: s._id || s.id,
+          name: s.subjectName || s.name || 'Untitled',
+          code: s.subjectCode || s.code || '-',
+          department: s.department || 'General',
+          instructor: s.faculty ? (s.faculty.name || `${s.faculty.firstName || ''} ${s.faculty.lastName || ''}`.trim()) : 'Unassigned',
+          capacity: s.capacity || 0,
+          enrolled: Array.isArray(s.enrolledStudents) ? s.enrolledStudents.length : 0,
+          waitlist: s.waitlistCount || 0,
+          credits: s.credits || 0,
+          schedule: s.schedule || '',
+          status: s.isActive === false ? 'inactive' : 'active'
         }));
 
         // Fetch students (admin list API returns transformed data)
@@ -94,7 +94,7 @@ const StudentEnrollment = () => {
     const enroll = async () => {
       try {
         setValidationError('');
-        await coursesAPI.enrollStudent(selectedCourseId, selectedStudentId);
+        // Local-only update to reflect enrollment (backend endpoint removed)
         const newEnrollments = [...enrollments, { courseId: selectedCourseId, studentId: String(selectedStudentId) }];
         setEnrollments(newEnrollments);
         // Optimistically update course enrollment count

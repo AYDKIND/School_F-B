@@ -1136,7 +1136,7 @@ export default function SubjectManagement() {
         </div>
       )}
 
-      <style jsx>{`
+<style>{`
         .subject-management {
           padding: 20px;
           max-width: 1400px;

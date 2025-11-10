@@ -681,7 +681,7 @@ export default function TransportManagement() {
         </div>
       )}
 
-      <style jsx>{`
+<style>{`
         .transport-management {
           padding: 20px;
           background: #f8f9fa;

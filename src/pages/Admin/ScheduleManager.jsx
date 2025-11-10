@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLoading } from '../../hooks/useLoading';
 import { useNotification } from '../../hooks/useNotification';
-import { adminAPI, coursesAPI, studentAPI } from '../../services/api.js';
+import { adminAPI, subjectAPI, studentAPI } from '../../services/api.js';
 import './ScheduleManager.css';
 
 const ScheduleManager = () => {
@@ -46,19 +46,19 @@ const ScheduleManager = () => {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const [classesRes, coursesRes, schedulesRes] = await Promise.all([
+      const [classesRes, subjectsRes, schedulesRes] = await Promise.all([
         studentAPI.getClasses({ retry: true }),
-        coursesAPI.getCourses({ retry: true }),
+        subjectAPI.getSubjects({ retry: true }),
         adminAPI.getSchedules({ retry: true })
       ]);
 
       const classesData = classesRes.data?.data || classesRes.data || [];
-      const coursesData = coursesRes.data?.data || coursesRes.data || [];
+      const coursesData = subjectsRes.data?.data || subjectsRes.data || [];
       const schedulesData = schedulesRes.data?.data || schedulesRes.data || [];
 
       setClasses((classesData || []).map(cl => cl.name || `${cl.class || ''} ${cl.section || ''}`.trim()));
-      // Derive subjects from available courses (use courseName)
-      const subjectSet = new Set((coursesData || []).map(c => c.courseName || c.name).filter(Boolean));
+      // Derive subjects from available subjects (use subjectName)
+      const subjectSet = new Set((coursesData || []).map(s => s.subjectName || s.name).filter(Boolean));
       setSubjects(Array.from(subjectSet));
 
       const normalizedSchedules = (schedulesData || []).map(s => ({
