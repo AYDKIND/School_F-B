@@ -59,7 +59,7 @@ const sendErrorProd = (err, res) => {
     });
   } else {
     // Programming or other unknown error: don't leak error details
-    console.error('ERROR 💥', err);
+    console.error('ERROR', err);
     
     res.status(500).json({
       success: false,
@@ -106,7 +106,7 @@ const notFound = (req, res, next) => {
 // Handle unhandled promise rejections
 const handleUnhandledRejection = () => {
   process.on('unhandledRejection', (err, promise) => {
-    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+    console.log('UNHANDLED REJECTION! Shutting down...');
     console.log(err.name, err.message);
     process.exit(1);
   });
@@ -115,7 +115,7 @@ const handleUnhandledRejection = () => {
 // Handle uncaught exceptions
 const handleUncaughtException = () => {
   process.on('uncaughtException', (err) => {
-    console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+    console.log('UNCAUGHT EXCEPTION!  Shutting down...');
     console.log(err.name, err.message);
     process.exit(1);
   });
@@ -124,9 +124,9 @@ const handleUncaughtException = () => {
 // Handle SIGTERM
 const handleSIGTERM = (server) => {
   process.on('SIGTERM', () => {
-    console.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
+    console.log(' SIGTERM RECEIVED. Shutting down gracefully');
     server.close(() => {
-      console.log('💥 Process terminated!');
+      console.log(' Process terminated!');
     });
   });
 };

@@ -57,7 +57,7 @@ const Home = () => {
           <div className="container hero-container">
             <div className="hero-content">
               <h1>WELCOME TO BBD ACADEMY</h1>
-              <h2>Nainajha, Post Hariharpur, District Sant Kabir Nagar</h2>
+              <h2>Nainajhala, Post Hariharpur, District Sant Kabir Nagar</h2>
               <p>Nurturing Young Minds, Building Future Leaders</p>
               <div className="hero-buttons">
                 <Link to="/programs" className="btn btn-primary">Explore Programs</Link>
