@@ -72,6 +72,22 @@ export default function FacultyDashboard() {
       <h1>Faculty Dashboard</h1>
       <p>Overview of your teaching schedule and activity.</p>
 
+      {/* Welcome header with actual faculty details */}
+      <div style={{ background: 'white', borderRadius: '8px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginTop: '12px' }}>
+        <h2 style={{ margin: 0 }}>
+          Welcome, {dashboardData?.facultyInfo?.name || 'Faculty'}
+        </h2>
+        <p style={{ margin: '6px 0', color: '#555' }}>
+          Employee ID: <strong>{dashboardData?.facultyInfo?.employeeId || 'N/A'}</strong>
+        </p>
+        <p style={{ margin: '6px 0', color: '#555' }}>
+          Department: <strong>{dashboardData?.facultyInfo?.department || 'Not specified'}</strong>
+        </p>
+        <p style={{ margin: '6px 0', color: '#555' }}>
+          Email: <strong>{dashboardData?.facultyInfo?.email || 'N/A'}</strong>
+        </p>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '20px' }}>
         {stats.map((s, i) => (
           <div key={i} style={{ background: 'white', borderRadius: '8px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', gap: '12px' }}>

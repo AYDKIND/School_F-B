@@ -24,6 +24,7 @@ import ScheduleManager from './pages/Admin/ScheduleManager';
 import FacultyAssignment from './pages/admin/FacultyAssignment';
 import StudentEnrollment from './pages/admin/StudentEnrollment';
 import AdminSettings from './pages/Admin/AdminSettings';
+import AdminGrades from './pages/Admin/AdminGrades.jsx';
 import AdmissionsManagement from './pages/Admin/AdmissionsManagement.jsx';
 import FeeManagement from './pages/Admin/FeeManagement.jsx';
 import Reports from './pages/Admin/Reports';
@@ -105,7 +106,7 @@ function App() {
             <Route path="/admin/reports" element={<ProtectedRoute roles={["admin"]}><Reports /></ProtectedRoute>} />
             <Route path="/admin/academic-calendar" element={<ProtectedRoute roles={["admin"]}><AcademicCalendar /></ProtectedRoute>} />
             <Route path="/admin/transport-management" element={<ProtectedRoute roles={["admin"]}><TransportManagement /></ProtectedRoute>} />
-            <Route path="/admin/grades" element={<ProtectedRoute roles={["admin"]}><FacultyGrades /></ProtectedRoute>} />
+            <Route path="/admin/grades" element={<ProtectedRoute roles={["admin"]}><AdminGrades /></ProtectedRoute>} />
             <Route path="/admin/student/:id" element={<ProtectedRoute roles={["admin"]}><AdminStudentProfile /></ProtectedRoute>} />
             {/* Section root redirects */}
             <Route path="/faculty" element={<Navigate to="/faculty/dashboard" replace />} />

@@ -7,6 +7,7 @@ const linkSets = {
     { to: '/admin/dashboard', label: 'Dashboard' },
     { to: '/admin/manage-students', label: 'Students' },
     { to: '/admin/manage-faculty', label: 'Faculty' },
+    { to: '/admin/grades', label: 'Grades' },
     { to: '/admin/reports', label: 'Reports' },
   ],
   faculty: [

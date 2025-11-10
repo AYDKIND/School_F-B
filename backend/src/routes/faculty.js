@@ -19,11 +19,14 @@ const getTimeAgo = (date) => {
 // @route   GET /api/faculty/dashboard
 // @desc    Get faculty dashboard data
 // @access  Private (Faculty only)
+// In router.get('/dashboard', ...)
 router.get('/dashboard', authenticateToken, requireRole(['faculty']), async (req, res) => {
   try {
-    // Get faculty profile
-    const facultyProfile = await Faculty.findOne({ userId: req.user.id });
-    
+    // Get faculty profile (fix: use 'user' ref and populate)
+    const facultyProfile = await Faculty
+      .findOne({ user: req.user._id || req.user.id })
+      .populate('user', 'firstName lastName email phone');
+
     // Get basic stats
     const totalStudents = await User.countDocuments({ role: 'student', status: 'active' });
     const totalFaculty = await User.countDocuments({ role: 'faculty', status: 'active' });
@@ -82,16 +85,19 @@ router.get('/dashboard', authenticateToken, requireRole(['faculty']), async (req
       stats: {
         classesToday,
         activeCourses,
-        totalStudents: Math.floor(totalStudents * 0.3), // Approximate students under this faculty
-        totalAssignments: 8 // Sample data
+        totalStudents: Math.floor(totalStudents * 0.3),
+        totalAssignments: 8
       },
       upcomingClasses,
       recentActivities,
       facultyInfo: {
-        name: `${req.user.firstName} ${req.user.lastName}`,
-        email: req.user.email,
+        name: facultyProfile?.user
+          ? `${facultyProfile.user.firstName || ''} ${facultyProfile.user.lastName || ''}`.trim()
+          : `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim(),
+        email: facultyProfile?.user?.email || req.user.email,
         department: facultyProfile?.department || 'Not specified',
-        employeeId: facultyProfile?.employeeId || 'N/A'
+        employeeId: facultyProfile?.employeeId || 'N/A',
+        designation: facultyProfile?.designation || 'N/A'
       }
     };
 
@@ -100,7 +106,6 @@ router.get('/dashboard', authenticateToken, requireRole(['faculty']), async (req
       message: 'Faculty dashboard data retrieved successfully',
       data: dashboardData
     });
-
   } catch (error) {
     console.error('Faculty dashboard error:', error);
     res.status(500).json({
@@ -358,17 +363,43 @@ router.get('/online-classes', (req, res) => {
   });
 });
 
-// @route   GET /api/faculty/profile
-// @desc    Get faculty profile
-// @access  Private (Faculty only)
-router.get('/profile', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Get faculty profile endpoint - To be implemented',
-    data: {
-      endpoint: 'GET /api/faculty/profile'
+// Implement GET /api/faculty/profile
+router.get('/profile', authenticateToken, requireRole(['faculty']), async (req, res) => {
+  try {
+    const faculty = await Faculty
+      .findOne({ user: req.user._id || req.user.id })
+      .populate('user', 'firstName lastName email phone status address');
+
+    if (!faculty) {
+      return res.status(404).json({ success: false, message: 'Faculty profile not found' });
     }
-  });
+
+    res.json({
+      success: true,
+      message: 'Faculty profile retrieved successfully',
+      data: {
+        id: String(faculty._id),
+        employeeId: faculty.employeeId,
+        department: faculty.department,
+        designation: faculty.designation,
+        joiningDate: faculty.joiningDate,
+        subjects: faculty.subjects,
+        classes: faculty.classes,
+        status: faculty.status,
+        user: {
+          id: String(faculty.user._id),
+          name: `${faculty.user.firstName || ''} ${faculty.user.lastName || ''}`.trim(),
+          email: faculty.user.email,
+          phone: faculty.user.phone,
+          status: faculty.user.status,
+          address: faculty.user.address || {}
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get faculty profile error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch faculty profile', error: error.message });
+  }
 });
 
 // @route   PUT /api/faculty/profile

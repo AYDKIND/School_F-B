@@ -65,6 +65,27 @@ export default function StudentDashboard() {
       <h1>Student Dashboard</h1>
       <p>Welcome back, Student! Here's your academic overview.</p>
 
+      {/* Welcome header with actual student details */}
+      <div style={{ background: 'white', borderRadius: '8px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginTop: '12px' }}>
+        <h2 style={{ margin: 0 }}>
+          Welcome, {dashboardData?.studentInfo?.name || 'Student'}
+        </h2>
+        <p style={{ margin: '6px 0', color: '#555' }}>
+          Class: <strong>{dashboardData?.studentInfo?.class || 'N/A'}</strong>
+          {dashboardData?.studentInfo?.section ? <> • Section: <strong>{dashboardData.studentInfo.section}</strong></> : null}
+        </p>
+        <p style={{ margin: '6px 0', color: '#555' }}>
+          Roll Number: <strong>{dashboardData?.studentInfo?.rollNumber || 'N/A'}</strong>
+        </p>
+        <p style={{ margin: '6px 0', color: '#555' }}>
+          Student ID: <strong>{dashboardData?.studentInfo?.studentId || 'N/A'}</strong>
+          {dashboardData?.studentInfo?.admissionNumber ? <> • Admission No: <strong>{dashboardData.studentInfo.admissionNumber}</strong></> : null}
+        </p>
+        <p style={{ margin: '6px 0', color: '#555' }}>
+          Email: <strong>{dashboardData?.studentInfo?.email || 'N/A'}</strong>
+        </p>
+      </div>
+
       {/* Stats Cards */}
       <div style={{
         display: 'grid',

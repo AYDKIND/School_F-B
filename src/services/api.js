@@ -243,6 +243,10 @@ export const adminAPI = {
   getFees: (config) => api.get('/admin/fees', config),
   createFeeStructure: (feeStructureData, config) => api.post('/admin/fees/structure', feeStructureData, config),
   recordPayment: (paymentData, config) => api.post('/admin/fees/payment', paymentData, config),
+
+  // Grades
+  createGrade: (gradeData, config) => api.post('/admin/grades', gradeData, config),
+  getGrades: (params = {}, config = {}) => api.get('/admin/grades', { params, ...config }),
 };
 
 // Student API calls

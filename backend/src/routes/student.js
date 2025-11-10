@@ -21,101 +21,49 @@ const getTimeAgo = (date) => {
 // @access  Private (Student only)
 router.get('/dashboard', authenticateToken, requireRole(['student']), async (req, res) => {
   try {
-    // Get student profile
-    const studentProfile = await Student.findOne({ userId: req.user.id });
-    
+    // Get student profile using 'user' ref and populate user fields
+    const studentProfile = await Student
+      .findOne({ user: req.user._id || req.user.id })
+      .populate('user', 'firstName lastName email phone status');
+
     // Sample data for today's classes (would come from actual schedule model)
     const todaysClasses = [
-      {
-        id: 1,
-        subject: 'Mathematics',
-        time: '10:00 AM - 11:00 AM',
-        teacher: 'Mr. Sharma',
-        room: 'Room 201',
-        status: 'upcoming'
-      },
-      {
-        id: 2,
-        subject: 'Science',
-        time: '11:15 AM - 12:15 PM',
-        teacher: 'Mrs. Gupta',
-        room: 'Lab 2',
-        status: 'upcoming'
-      },
-      {
-        id: 3,
-        subject: 'English',
-        time: '01:30 PM - 02:30 PM',
-        teacher: 'Ms. Patel',
-        room: 'Room 105',
-        status: 'upcoming'
-      }
+      { id: 1, subject: 'Mathematics', time: '10:00 AM - 11:00 AM', teacher: 'Mr. Sharma', room: 'Room 201', status: 'upcoming' },
+      { id: 2, subject: 'Science', time: '11:15 AM - 12:15 PM', teacher: 'Mrs. Gupta', room: 'Lab 2', status: 'upcoming' },
+      { id: 3, subject: 'English', time: '01:30 PM - 02:30 PM', teacher: 'Ms. Patel', room: 'Room 105', status: 'upcoming' }
     ];
-    
-    // Sample assignments data (would come from actual assignments model)
+
+    // Sample assignments data
     const assignments = [
-      {
-        id: 1,
-        subject: 'Mathematics',
-        title: 'Algebra Assignment',
-        dueDate: '2024-01-15',
-        status: 'pending',
-        priority: 'high'
-      },
-      {
-        id: 2,
-        subject: 'Science',
-        title: 'Physics Lab Report',
-        dueDate: '2024-01-18',
-        status: 'submitted',
-        priority: 'medium'
-      },
-      {
-        id: 3,
-        subject: 'English',
-        title: 'Essay on Literature',
-        dueDate: '2024-01-20',
-        status: 'pending',
-        priority: 'medium'
-      }
+      { id: 1, subject: 'Mathematics', title: 'Algebra Assignment', dueDate: '2024-01-15', status: 'pending', priority: 'high' },
+      { id: 2, subject: 'Science', title: 'Physics Lab Report', dueDate: '2024-01-18', status: 'submitted', priority: 'medium' },
+      { id: 3, subject: 'English', title: 'Essay on Literature', dueDate: '2024-01-20', status: 'pending', priority: 'medium' }
     ];
-    
-    // Sample recent grades (would come from actual grades model)
+
+    // Sample recent grades
     const recentGrades = [
-      {
-        id: 1,
-        subject: 'Mathematics',
-        assignment: 'Unit Test 1',
-        grade: 'A',
-        marks: '85/100',
-        date: getTimeAgo(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000))
-      },
-      {
-        id: 2,
-        subject: 'Science',
-        assignment: 'Lab Practical',
-        grade: 'B+',
-        marks: '78/100',
-        date: getTimeAgo(new Date(Date.now() - 5 * 24 * 60 * 60 * 1000))
-      }
+      { id: 1, subject: 'Mathematics', assignment: 'Unit Test 1', grade: 'A', marks: '85/100', date: getTimeAgo(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)) },
+      { id: 2, subject: 'Science', assignment: 'Lab Practical', grade: 'B+', marks: '78/100', date: getTimeAgo(new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)) }
     ];
-    
-    // Sample attendance summary (would come from actual attendance model)
-    const attendanceSummary = {
-      totalClasses: 120,
-      attendedClasses: 108,
-      percentage: 90,
-      status: 'good'
+
+    // Sample attendance summary
+    const attendanceSummary = { totalClasses: 120, attendedClasses: 108, percentage: 90, status: 'good' };
+
+    const studentInfo = {
+      name: studentProfile?.user
+        ? `${studentProfile.user.firstName || ''} ${studentProfile.user.lastName || ''}`.trim()
+        : `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim(),
+      email: studentProfile?.user?.email || req.user.email,
+      class: studentProfile?.class || 'N/A',
+      section: studentProfile?.section || 'N/A',
+      rollNumber: studentProfile?.rollNumber || 'N/A',
+      studentId: studentProfile?.studentId || 'N/A',
+      admissionNumber: studentProfile?.admissionNumber || 'N/A',
+      academicYear: studentProfile?.academicYear || 'N/A'
     };
 
     const dashboardData = {
-      studentInfo: {
-        name: `${req.user.firstName} ${req.user.lastName}`,
-        email: req.user.email,
-        class: studentProfile?.class || '10-A',
-        rollNumber: studentProfile?.rollNumber || 'N/A',
-        studentId: studentProfile?.studentId || 'N/A'
-      },
+      studentInfo,
       todaysClasses,
       assignments: {
         total: assignments.length,
@@ -125,56 +73,62 @@ router.get('/dashboard', authenticateToken, requireRole(['student']), async (req
       },
       recentGrades,
       attendanceSummary,
-      quickStats: {
-        totalSubjects: 6,
-        upcomingTests: 2,
-        pendingFees: 0,
-        libraryBooks: 3
-      }
+      quickStats: { totalSubjects: 6, upcomingTests: 2, pendingFees: 0, libraryBooks: 3 }
     };
 
-    res.json({
-      success: true,
-      message: 'Student dashboard data retrieved successfully',
-      data: dashboardData
-    });
-
+    res.json({ success: true, message: 'Student dashboard data retrieved successfully', data: dashboardData });
   } catch (error) {
     console.error('Student dashboard error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch student dashboard data',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to fetch student dashboard data', error: error.message });
   }
 });
 
 // @route   GET /api/student/profile
 // @desc    Get student profile
 // @access  Private (Student only)
-router.get('/profile', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Get student profile endpoint - To be implemented',
-    data: {
-      endpoint: 'GET /api/student/profile',
-      returns: ['personal_info', 'academic_info', 'parent_contact']
-    }
-  });
-});
+router.get('/profile', authenticateToken, requireRole(['student']), async (req, res) => {
+  try {
+    const student = await Student
+      .findOne({ user: req.user._id || req.user.id })
+      .populate('user', 'firstName lastName email phone status address dateOfBirth');
 
-// @route   PUT /api/student/profile
-// @desc    Update student profile
-// @access  Private (Student only)
-router.put('/profile', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Update student profile endpoint - To be implemented',
-    data: {
-      endpoint: 'PUT /api/student/profile',
-      updatable_fields: ['phone', 'address', 'emergency_contact', 'profile_picture']
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student profile not found' });
     }
-  });
+
+    res.json({
+      success: true,
+      message: 'Student profile retrieved successfully',
+      data: {
+        id: String(student._id),
+        studentId: student.studentId,
+        rollNumber: student.rollNumber,
+        class: student.class,
+        section: student.section,
+        academicYear: student.academicYear,
+        admissionDate: student.admissionDate,
+        admissionNumber: student.admissionNumber,
+        status: student.status,
+        user: {
+          id: String(student.user._id),
+          name: `${student.user.firstName || ''} ${student.user.lastName || ''}`.trim(),
+          email: student.user.email,
+          phone: student.user.phone,
+          status: student.user.status,
+          address: student.user.address || {},
+          dateOfBirth: student.user.dateOfBirth || null
+        },
+        father: student.father,
+        mother: student.mother,
+        guardian: student.guardian,
+        feeStatus: student.feeStatus,
+        transport: student.transport
+      }
+    });
+  } catch (error) {
+    console.error('Get student profile error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch student profile', error: error.message });
+  }
 });
 
 // @route   GET /api/student/assignments
@@ -221,12 +175,12 @@ router.get('/grades', authenticateToken, requireRole(['student']), async (req, r
     }
 
     const grades = await Grade.find({ student: studentDoc._id, isPublished: true })
-      .populate('course', 'name courseCode credits')
+      .populate('course', 'courseName courseCode credits')
       .sort({ assessmentDate: -1 })
       .limit(200);
 
     const data = grades.map(g => ({
-      subject: g.course?.name || 'Unknown',
+      subject: g.course?.courseName || 'Unknown',
       assessment: g.assessmentName,
       marks: g.obtainedMarks,
       totalMarks: g.maxMarks,

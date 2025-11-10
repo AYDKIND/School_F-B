@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Student = require('../models/Student');
 const Faculty = require('../models/Faculty');
@@ -9,6 +10,7 @@ const Admission = require('../models/Admission');
 const { FeeStructure, FeePayment, FeeDue } = require('../models/Fee');
 const Attendance = require('../models/Attendance');
 const Grade = require('../models/Grade');
+const Course = require('../models/Course');
 
 // @route   GET /api/admin/dashboard
 // @desc    Get admin dashboard data
@@ -1573,9 +1575,16 @@ router.post('/fees/structure', authenticateToken, requireRole(['admin']), async 
 router.post('/grades', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const {
-      student,
+      // Student identification options
+      student, // ObjectId of Student (optional)
+      studentId, // custom studentId (optional)
+      admissionNumber, // optional
+      email, // student's email (optional)
+      // Grade fields
       course,
+      courseCode,            // NEW: alternative to course ObjectId
       faculty,
+      employeeId,            // NEW: alternative to faculty ObjectId
       assessmentType,
       assessmentName,
       maxMarks,
@@ -1587,11 +1596,12 @@ router.post('/grades', authenticateToken, requireRole(['admin']), async (req, re
       isPublished
     } = req.body || {};
 
-    // Basic validation
+    // Validate required grade fields (student resolved below).
     const missing = [];
-    if (!student) missing.push('student');
-    if (!course) missing.push('course');
-    if (!faculty) missing.push('faculty');
+    // Accept either `course` (ObjectId) OR `courseCode`
+    if (!course && !courseCode) missing.push('course or courseCode');
+    // Accept either `faculty` (ObjectId) OR `employeeId`
+    if (!faculty && !employeeId) missing.push('faculty or employeeId');
     if (!assessmentType) missing.push('assessmentType');
     if (!assessmentName) missing.push('assessmentName');
     if (maxMarks === undefined) missing.push('maxMarks');
@@ -1602,16 +1612,97 @@ router.post('/grades', authenticateToken, requireRole(['admin']), async (req, re
       return res.status(400).json({ success: false, message: `Missing fields: ${missing.join(', ')}` });
     }
 
+    // Additional validations
+    const allowedSessions = ['1', '2'];
+    const allowedTypes = ['Quiz', 'Assignment', 'Midterm', 'Final', 'Project', 'Presentation', 'Lab', 'Homework'];
+    if (!allowedSessions.includes(String(session))) {
+      return res.status(422).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [{ path: 'session', message: "Session must be '1' or '2'" }]
+      });
+    }
+    if (!allowedTypes.includes(String(assessmentType))) {
+      return res.status(422).json({
+        success: false,
+        message: 'Validation failed',
+        errors: [{ path: 'assessmentType', message: `assessmentType must be one of: ${allowedTypes.join(', ')}` }]
+      });
+    }
+
+    // Resolve student
+    let studentDoc = null;
+    if (student) {
+      studentDoc = await Student.findById(student);
+    }
+    if (!studentDoc && (studentId || admissionNumber)) {
+      studentDoc = await Student.findOne({
+        ...(studentId ? { studentId } : {}),
+        ...(admissionNumber ? { admissionNumber } : {})
+      });
+    }
+    if (!studentDoc && email) {
+      const userDoc = await User.findOne({
+        email: String(email).trim().toLowerCase(),
+        role: 'student',
+        status: 'active'
+      });
+      if (userDoc) {
+        studentDoc = await Student.findOne({ user: userDoc._id });
+      }
+    }
+    if (!studentDoc) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found via provided identifiers (student, studentId, admissionNumber, email).'
+      });
+    }
+
+    // Resolve course
+    const isValidObjectId = (v) => mongoose.Types.ObjectId.isValid(String(v));
+    let courseId = course;
+    if (!courseId || !isValidObjectId(courseId)) {
+      const code = (courseCode || course)?.toString().trim().toUpperCase();
+      if (!code) {
+        return res.status(400).json({ success: false, message: 'Provide course (ObjectId) or courseCode' });
+      }
+      const courseDoc = await Course.findOne({ courseCode: code });
+      if (!courseDoc) {
+        return res.status(404).json({ success: false, message: `Course not found for courseCode: ${code}` });
+      }
+      courseId = courseDoc._id;
+    }
+
+    // Resolve faculty
+    let facultyId = faculty;
+    if (!facultyId || !isValidObjectId(facultyId)) {
+      const empId = (employeeId || faculty)?.toString().trim().toUpperCase();
+      if (!empId) {
+        return res.status(400).json({ success: false, message: 'Provide faculty (ObjectId) or employeeId' });
+      }
+      const facultyDoc = await Faculty.findOne({ employeeId: empId });
+      if (!facultyDoc) {
+        return res.status(404).json({ success: false, message: `Faculty not found for employeeId: ${empId}` });
+      }
+      facultyId = facultyDoc._id;
+    }
+
+    // Prepare numeric and date values
+    const max = Number(maxMarks);
+    const obtained = Number(obtainedMarks);
+    const assessDate = new Date(assessmentDate);
+
     const doc = await Grade.create({
-      student,
-      course,
-      faculty,
+      student: studentDoc._id,
+      course: courseId,
+      faculty: facultyId,
       assessmentType,
       assessmentName,
-      maxMarks: Number(maxMarks),
-      obtainedMarks: Number(obtainedMarks),
-      assessmentDate: new Date(assessmentDate),
-      academicYear: academicYear,
+      maxMarks: max,
+      obtainedMarks: obtained,
+      percentage: max > 0 ? (obtained / max) * 100 : undefined,
+      assessmentDate: assessDate,
+      academicYear,
       session: String(session),
       remarks,
       isPublished: !!isPublished
@@ -1619,8 +1710,91 @@ router.post('/grades', authenticateToken, requireRole(['admin']), async (req, re
 
     res.status(201).json({ success: true, data: doc });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      const details = error.errors
+        ? Object.values(error.errors).map(e => ({ path: e.path, message: e.message }))
+        : [{ path: 'unknown', message: error.message }];
+      return res.status(422).json({ success: false, message: 'Validation failed', errors: details });
+    }
     console.error('Create grade error:', error);
     res.status(500).json({ success: false, message: 'Error creating grade', error: error.message });
+  }
+});
+
+// @route   GET /api/admin/grades
+// @desc    List grades with optional filters
+// @access  Private (Admin only)
+router.get('/grades', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    const {
+      student, // Student ObjectId
+      studentId,
+      admissionNumber,
+      email,
+      course,
+      session,
+      academicYear,
+      isPublished,
+      page = 1,
+      limit = 10
+    } = req.query || {};
+
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
+    const skip = (pageNum - 1) * limitNum;
+
+    // Resolve student if email/studentId/admissionNumber provided
+    let studentIdResolved = student || null;
+    if (!studentIdResolved && (studentId || admissionNumber || email)) {
+      let studentDoc = null;
+      if (studentId || admissionNumber) {
+        studentDoc = await Student.findOne({
+          ...(studentId ? { studentId } : {}),
+          ...(admissionNumber ? { admissionNumber } : {})
+        });
+      }
+      if (!studentDoc && email) {
+        const userDoc = await User.findOne({ email: String(email).trim().toLowerCase(), role: 'student', status: 'active' });
+        if (userDoc) {
+          studentDoc = await Student.findOne({ user: userDoc._id });
+        }
+      }
+      if (studentDoc) studentIdResolved = String(studentDoc._id);
+    }
+
+    const match = {
+      ...(studentIdResolved ? { student: studentIdResolved } : {}),
+      ...(course ? { course } : {}),
+      ...(session ? { session } : {}),
+      ...(academicYear ? { academicYear } : {}),
+      ...(typeof isPublished !== 'undefined' ? { isPublished: String(isPublished) === 'true' } : {}),
+    };
+
+    const [grades, totalCount] = await Promise.all([
+      Grade.find(match)
+        .populate('student', 'rollNumber')
+        .populate('course', 'name courseCode credits')
+        .populate('faculty', 'employeeId department')
+        .sort({ assessmentDate: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Grade.countDocuments(match)
+    ]);
+
+    res.json({
+      success: true,
+      data: grades,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.max(1, Math.ceil(totalCount / limitNum)),
+        totalItems: totalCount,
+        hasNext: pageNum * limitNum < totalCount,
+        hasPrev: pageNum > 1
+      }
+    });
+  } catch (error) {
+    console.error('List grades error:', error);
+    res.status(500).json({ success: false, message: 'Error fetching grades', error: error.message });
   }
 });
 
