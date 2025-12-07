@@ -29,6 +29,7 @@ import AdmissionsManagement from './pages/Admin/AdmissionsManagement.jsx';
 import FeeManagement from './pages/Admin/FeeManagement.jsx';
 import Reports from './pages/Admin/Reports';
 import AdminLogin from './pages/Admin/AdminLogin.jsx';
+import UserManagement from './pages/Admin/UserManagement.jsx';
 import AcademicCalendar from './pages/Admin/AcademicCalendar.jsx';
 import TransportManagement from './pages/Admin/TransportManagement.jsx';
 // Grade Management (Admin reuses FacultyGrades)
@@ -104,6 +105,7 @@ function App() {
             <Route path="/admin/faculty-assignment" element={<ProtectedRoute roles={['admin']}><FacultyAssignment /></ProtectedRoute>} />
             <Route path="/admin/student-enrollment" element={<ProtectedRoute roles={['admin']}><StudentEnrollment /></ProtectedRoute>} />
             <Route path="/admin/settings" element={<ProtectedRoute roles={['admin']}><AdminSettings /></ProtectedRoute>} />
+            <Route path="/admin/user-management" element={<ProtectedRoute roles={['admin']}><UserManagement /></ProtectedRoute>} />
             <Route path="/admin/admissions" element={<ProtectedRoute roles={['admin']}><AdmissionsManagement /></ProtectedRoute>} />
             <Route path="/admin/fee-management" element={<ProtectedRoute roles={['admin']}><FeeManagement /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute roles={['admin']}><Reports /></ProtectedRoute>} />

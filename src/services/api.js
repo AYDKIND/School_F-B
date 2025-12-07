@@ -299,6 +299,9 @@ export const adminAPI = {
   getGrades: (params = {}, config = {}) => api.get('/admin/grades', { params, ...config }),
   // NEW: minimal subject creation (Course with defaults)
   createSimpleSubject: (payload, config) => api.post('/admin/subjects/simple', payload, config),
+  // User Management
+  getUsers: (params = {}, config = {}) => api.get('/admin/users', { params, ...config }),
+  unlockUser: (id, config = {}) => api.patch(`/admin/users/${id}/unlock`, {}, config),
 };
 
 // Student API calls

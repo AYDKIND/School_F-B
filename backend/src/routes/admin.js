@@ -2517,4 +2517,77 @@ router.delete('/assignments/:id', authenticateToken, requireRole(['admin']), asy
   }
 });
 
+// @route   GET /api/admin/users
+// @desc    Get all users (with search and pagination)
+// @access  Private (Admin only)
+router.get('/users', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const role = req.query.role || '';
+    const status = req.query.status || '';
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (role) query.role = role;
+    if (status) query.status = status;
+
+    const skip = (page - 1) * limit;
+
+    const users = await User.find(query)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await User.countDocuments(query);
+
+    res.json({
+      success: true,
+      data: {
+        users,
+        pagination: {
+          total,
+          page,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route   PATCH /api/admin/users/:id/unlock
+// @desc    Unlock a user account
+// @access  Private (Admin only)
+router.patch('/users/:id/unlock', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    await user.resetLoginAttempts();
+
+    res.json({
+      success: true,
+      message: 'User account unlocked successfully'
+    });
+  } catch (error) {
+    console.error('Error unlocking user:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;

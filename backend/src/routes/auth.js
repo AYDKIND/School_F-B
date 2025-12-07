@@ -86,10 +86,18 @@ router.post('/login', [
 
     // Check if account is locked
     if (user.isLocked) {
-      return res.status(401).json({
-        success: false,
-        message: 'Account is temporarily locked due to too many failed login attempts'
-      });
+      // Auto-unlock in development/test environments
+      if (process.env.NODE_ENV !== 'production' || process.env.RELAX_AUTH === 'true') {
+        await user.resetLoginAttempts();
+        // Update in-memory user object to reflect changes
+        user.lockUntil = undefined;
+        user.loginAttempts = 0;
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: 'Account is temporarily locked due to too many failed login attempts'
+        });
+      }
     }
 
     // Check password with defensive error handling
