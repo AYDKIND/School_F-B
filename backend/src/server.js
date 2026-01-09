@@ -250,7 +250,10 @@ if (fs.existsSync(path.join(distPath, 'index.html'))) {
 } else {
   app.use((req, res, next) => {
     if (req.path.startsWith('/api')) return next();
-    res.status(404).json({ success: false, message: 'Frontend build not found' });
+    if (req.path === '/' || req.path === '') {
+      return res.redirect(302, '/api/docs');
+    }
+    res.status(404).json({ success: false, message: 'Frontend build not found', swagger: '/api/docs' });
   });
 }
 
