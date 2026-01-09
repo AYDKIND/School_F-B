@@ -5,7 +5,12 @@ const { User } = require('../models');
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    let token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    // Fix: Handle case where user pastes "Bearer <token>" into Swagger (resulting in "Bearer Bearer <token>")
+    if (token === 'Bearer' && authHeader.split(' ')[2]) {
+      token = authHeader.split(' ')[2];
+    }
 
     if (!token) {
       return res.status(401).json({

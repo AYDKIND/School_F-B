@@ -70,6 +70,48 @@ router.post('/routes', authenticateToken, requireRole(['admin']), async (req, re
   }
 });
 
+/**
+ * @swagger
+ * /transport/routes/{id}:
+ *   put:
+ *     summary: Update transport route
+ *     tags: [Transport]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               routeName:
+ *                 type: string
+ *               startLocation:
+ *                 type: string
+ *               endLocation:
+ *                 type: string
+ *               stops:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               distance:
+ *                 type: number
+ *               estimatedTime:
+ *                 type: number
+ *               fare:
+ *                 type: number
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Route updated successfully
+ */
 // Update route
 router.put('/routes/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {

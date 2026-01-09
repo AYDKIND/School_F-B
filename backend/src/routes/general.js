@@ -10,6 +10,23 @@ const AcademicCalendar = require('../models/AcademicCalendar');
 const Notice = require('../models/Notice');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
+/**
+ * @swagger
+ * tags:
+ *   name: General
+ *   description: General public endpoints
+ */
+
+/**
+ * @swagger
+ * /general/health:
+ *   get:
+ *     summary: Check server health
+ *     tags: [General]
+ *     responses:
+ *       200:
+ *         description: Server is running
+ */
 // Health check endpoint
 router.get('/health', (req, res) => {
   res.json({
@@ -20,6 +37,16 @@ router.get('/health', (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /general/stats:
+ *   get:
+ *     summary: Get system statistics
+ *     tags: [General]
+ *     responses:
+ *       200:
+ *         description: System statistics
+ */
 // Get system statistics (public endpoint)
 router.get('/stats', async (req, res) => {
   try {
@@ -45,6 +72,16 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /general/school-info:
+ *   get:
+ *     summary: Get school information
+ *     tags: [General]
+ *     responses:
+ *       200:
+ *         description: School information
+ */
 // Get public information about the school
 router.get('/school-info', (req, res) => {
   res.json({
@@ -71,6 +108,16 @@ router.get('/school-info', (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /general/departments:
+ *   get:
+ *     summary: Get available departments
+ *     tags: [General]
+ *     responses:
+ *       200:
+ *         description: List of departments
+ */
 // Get available departments
 router.get('/departments', async (req, res) => {
   try {
@@ -91,6 +138,16 @@ router.get('/departments', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /general/sessions:
+ *   get:
+ *     summary: Get available sessions
+ *     tags: [General]
+ *     responses:
+ *       200:
+ *         description: List of sessions
+ */
 // Get available sessions (canonical)
 router.get('/sessions', async (req, res) => {
   try {

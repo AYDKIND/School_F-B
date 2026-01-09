@@ -13,6 +13,45 @@ try {
 const { csrfCheck } = require('./middleware/csrf');
 const { User } = require('./models');
 const emailService = require('./services/emailService');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+// Swagger Configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'School BBD API',
+      version: '1.0.0',
+      description: 'API documentation for School BBD Management System',
+      contact: {
+        name: 'API Support',
+        email: 'support@schoolbbd.com'
+      }
+    },
+    servers: [
+      {
+        url: '/api',
+        description: 'Main API server'
+      }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    },
+    security: [{
+      bearerAuth: []
+    }]
+  },
+  apis: ['./src/routes/*.js'] // Path to the API docs
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 // Validate essential environment variables at startup
 // Allow relaxed env requirements in E2E/local dev
@@ -164,6 +203,31 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Swagger Documentation Endpoint
+app.get('/api/docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'School BBD API Docs',
+  swaggerOptions: {
+    url: '/api/docs.json'
+  }
+}));
+
+// Root API Welcome
+app.get('/api', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Welcome to School BBD API',
+    version: '1.0.0',
+    documentation: '/api/docs',
+    health: '/health'
+  });
+});
+
 // API routes
   app.use('/api/auth', require('./routes/auth'));
   app.use('/api/admin', require('./routes/admin'));
@@ -213,7 +277,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`BBD School Backend Server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);

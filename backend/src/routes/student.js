@@ -23,6 +23,25 @@ const getTimeAgo = (date) => {
   return 'Just now';
 };
 
+/**
+ * @swagger
+ * tags:
+ *   name: Student
+ *   description: Student portal and dashboard
+ */
+
+/**
+ * @swagger
+ * /student/dashboard:
+ *   get:
+ *     summary: Get student dashboard data
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Student dashboard data
+ */
 // @route   GET /api/student/dashboard
 // @desc    Get student dashboard data
 // @access  Private (Student only)
@@ -110,6 +129,20 @@ router.get('/dashboard', authenticateToken, requireRole(['student']), async (req
   }
 });
 
+/**
+ * @swagger
+ * /student/profile:
+ *   get:
+ *     summary: Get student profile
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Student profile retrieved successfully
+ *       404:
+ *         description: Student profile not found
+ */
 // @route   GET /api/student/profile
 // @desc    Get student profile
 // @access  Private (Student only)
@@ -160,6 +193,18 @@ router.get('/profile', authenticateToken, requireRole(['student']), async (req, 
 
 // Removed placeholder routes for assignments list and submit; real implementations exist below
 
+/**
+ * @swagger
+ * /student/grades:
+ *   get:
+ *     summary: Get published grades for the logged-in student
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of grades
+ */
 // @route   GET /api/student/grades
 // @desc    Get published grades for the logged-in student
 // @access  Private (Student only)
@@ -195,6 +240,36 @@ router.get('/grades', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /student/attendance:
+ *   get:
+ *     summary: Get student attendance
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: course
+ *         schema:
+ *           type: string
+ *         description: Filter by course ID
+ *       - in: query
+ *         name: date_from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date
+ *       - in: query
+ *         name: date_to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date
+ *     responses:
+ *       200:
+ *         description: Attendance records
+ */
 // @route   GET /api/student/attendance
 // @desc    Get student attendance
 // @access  Private (Student only)
@@ -242,6 +317,18 @@ router.get('/attendance', authenticateToken, requireRole(['student']), async (re
   }
 });
 
+/**
+ * @swagger
+ * /student/schedule:
+ *   get:
+ *     summary: Get class schedule
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Class schedule
+ */
 // @route   GET /api/student/schedule
 // @desc    Get class schedule
 // @access  Private (Student only)
@@ -256,6 +343,28 @@ router.get('/schedule', (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /student/online-classes:
+ *   get:
+ *     summary: Get online classes for the student's class
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: subject
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [scheduled, live, completed]
+ *     responses:
+ *       200:
+ *         description: List of online classes
+ */
 // @route   GET /api/student/online-classes
 // @desc    Get online classes for the student's class
 // @access  Private (Student only)
@@ -291,6 +400,18 @@ router.get('/online-classes', authenticateToken, requireRole(['student']), async
   }
 });
 
+/**
+ * @swagger
+ * /student/courses:
+ *   get:
+ *     summary: List courses for the student's class
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of courses
+ */
 // @route   GET /api/student/courses
 // @desc    List courses for the student's class
 // @access  Private (Student only)
@@ -310,6 +431,23 @@ router.get('/courses', authenticateToken, requireRole(['student']), async (req, 
   }
 });
 
+/**
+ * @swagger
+ * /student/assignments:
+ *   get:
+ *     summary: List assignments for the student's class
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: subject
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of assignments
+ */
 // @route   GET /api/student/assignments
 // @desc    List assignments for the student's class
 // @access  Private (Student only)
@@ -333,6 +471,37 @@ router.get('/assignments', authenticateToken, requireRole(['student']), async (r
   }
 });
 
+/**
+ * @swagger
+ * /student/assignments/{id}/submit:
+ *   post:
+ *     summary: Submit an assignment
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *               attachments:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Assignment submitted successfully
+ */
 // @route   POST /api/student/assignments/:id/submit
 // @desc    Submit an assignment
 // @access  Private (Student only)
@@ -369,6 +538,24 @@ router.post('/assignments/:id/submit', authenticateToken, requireRole(['student'
   }
 });
 
+/**
+ * @swagger
+ * /student/online-classes/{id}/join:
+ *   post:
+ *     summary: Join an online class
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Join info retrieved successfully
+ */
 // @route   POST /api/student/online-classes/:id/join
 // @desc    Join an online class (returns meeting link and access code)
 // @access  Private (Student only)
@@ -411,6 +598,18 @@ router.post('/online-classes/:id/join', authenticateToken, requireRole(['student
   }
 });
 
+/**
+ * @swagger
+ * /student/fees:
+ *   get:
+ *     summary: Get fee information
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Fee details including dues and payment history
+ */
 // @route   GET /api/student/fees
 // @desc    Get fee information
 // @access  Private (Student only)
@@ -581,6 +780,25 @@ router.get('/fees', authenticateToken, requireRole(['student']), async (req, res
   }
 });
 
+/**
+ * @swagger
+ * /student/fees/structures:
+ *   get:
+ *     summary: Get active fee structures for an academic year (optional class filter)
+ *     tags: [Student]
+ *     parameters:
+ *       - in: query
+ *         name: academicYear
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: class
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of fee structures
+ */
 // @route   GET /api/student/fees/structures
 // @desc    Get active fee structures for an academic year (optional class filter)
 // @access  Public (no auth required for viewing)
@@ -611,6 +829,31 @@ router.get('/fees/structures', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /student/fees/payment:
+ *   post:
+ *     summary: Process fee payment
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               dueId:
+ *                 type: string
+ *               paymentMethod:
+ *                 type: string
+ *               transactionId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Payment processed successfully
+ */
 // @route   POST /api/student/fees/payment
 // @desc    Process fee payment
 // @access  Private (Student only)
@@ -703,6 +946,18 @@ router.post('/fees/payment', authenticateToken, requireRole(['student']), async 
   }
 });
 
+/**
+ * @swagger
+ * /student/library:
+ *   get:
+ *     summary: Get library information
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Library info (issued books, fines, etc.)
+ */
 // @route   GET /api/student/library
 // @desc    Get library information
 // @access  Private (Student only)
@@ -717,6 +972,30 @@ router.get('/library', (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /student/library/request:
+ *   post:
+ *     summary: Request a book from library
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               book_id:
+ *                 type: string
+ *               request_date:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       200:
+ *         description: Book request submitted
+ */
 // @route   POST /api/student/library/request
 // @desc    Request book from library
 // @access  Private (Student only)
@@ -731,6 +1010,31 @@ router.post('/library/request', (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /student/notifications:
+ *   get:
+ *     summary: Get student notifications
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: read_status
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of notifications
+ */
 // @route   GET /api/student/notifications
 // @desc    Get student notifications
 // @access  Private (Student only)
@@ -745,6 +1049,24 @@ router.get('/notifications', (req, res) => {
   });
 });
 
+/**
+ * @swagger
+ * /student/notifications/{id}/read:
+ *   put:
+ *     summary: Mark notification as read
+ *     tags: [Student]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notification marked as read
+ */
 // @route   PUT /api/student/notifications/:id/read
 // @desc    Mark notification as read
 // @access  Private (Student only)

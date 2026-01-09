@@ -15,6 +15,37 @@ router.post('/create', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /payments/capture:
+ *   post:
+ *     summary: Capture payment
+ *     tags: [Payments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - paymentId
+ *               - orderId
+ *               - signature
+ *             properties:
+ *               paymentId:
+ *                 type: string
+ *               orderId:
+ *                 type: string
+ *               signature:
+ *                 type: string
+ *               studentId:
+ *                 type: string
+ *               amount:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Payment captured successfully
+ */
 // Capture payment after successful confirmation
 router.post('/capture', async (req, res) => {
   try {

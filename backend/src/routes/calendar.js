@@ -4,6 +4,44 @@ const { body, validationResult } = require('express-validator');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { AcademicCalendar } = require('../models');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Calendar
+ *   description: Academic calendar management
+ */
+
+/**
+ * @swagger
+ * /calendar:
+ *   get:
+ *     summary: Get all calendar events
+ *     tags: [Calendar]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: eventType
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: targetAudience
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of calendar events
+ */
 // @route   GET /api/calendar
 // @desc    Get all calendar events
 // @access  Private
@@ -93,6 +131,46 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /calendar:
+ *   post:
+ *     summary: Create new calendar event
+ *     tags: [Calendar]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - startDate
+ *               - endDate
+ *               - eventType
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               endDate:
+ *                 type: string
+ *                 format: date-time
+ *               eventType:
+ *                 type: string
+ *                 enum: [Holiday, Exam, Event, Meeting, Other]
+ *               targetAudience:
+ *                 type: string
+ *                 enum: [All, Students, Faculty, Admin]
+ *     responses:
+ *       201:
+ *         description: Event created successfully
+ */
 // @route   POST /api/calendar
 // @desc    Create new calendar event
 // @access  Private (Admin only)

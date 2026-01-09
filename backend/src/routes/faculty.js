@@ -43,6 +43,30 @@ const getTimeAgo = (date) => {
   return 'Just now';
 };
 
+/**
+ * @swagger
+ * tags:
+ *   name: Faculty
+ *   description: Faculty management and dashboard
+ */
+
+/**
+ * @swagger
+ * /faculty/dashboard:
+ *   get:
+ *     summary: Get faculty dashboard data
+ *     tags: [Faculty]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: session
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Faculty dashboard data
+ */
 // @route   GET /api/faculty/dashboard
 // @desc    Get faculty dashboard data
 // @access  Private (Faculty only)

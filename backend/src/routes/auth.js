@@ -6,6 +6,73 @@ const router = express.Router();
 const E2E = process.env.E2E_MODE === 'true';
 const e2eResetOtps = new Map();
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Authenticate user and get token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - role
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User email address
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: User password
+ *               role:
+ *                 type: string
+ *                 enum: [admin, faculty, student]
+ *                 description: User role
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       description: JWT access token
+ *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZGRlZmZhMWUyYjNjMDBhYmNkZWYwMSIsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzEwMDI4ODAwLCJleHAiOjE3MTA2MzM2MDB9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         firstName:
+ *                           type: string
+ *                           example: "John"
+ *                         lastName:
+ *                           type: string
+ *                           example: "Doe"
+ *                         email:
+ *                           type: string
+ *                           example: "john.doe@school.edu"
+ *                         role:
+ *                           type: string
+ *                           example: "student"
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Invalid credentials or account locked
+ */
 // @route   POST /api/auth/login
 // @desc    Login user (admin, faculty, student)
 // @access  Public
