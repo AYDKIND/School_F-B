@@ -6,10 +6,10 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
-try {
-  const envPath = path.join(__dirname, '.env');
+const envPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
   require('dotenv').config({ path: envPath });
-} catch (_) { }
+}
 const { csrfCheck } = require('./middleware/csrf');
 const { User } = require('./models');
 const emailService = require('./services/emailService');
@@ -149,7 +149,6 @@ const allowedOrigins = [
   normalize(process.env.FRONTEND_URL)
 ].filter(Boolean);
 
-const isDev = process.env.NODE_ENV !== 'production';
 // Allow localhost or 127.0.0.1 on any port in development
 const devOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 

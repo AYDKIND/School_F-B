@@ -49,7 +49,7 @@ router.post('/create', async (req, res) => {
 // Capture payment after successful confirmation
 router.post('/capture', async (req, res) => {
   try {
-    const { paymentId, orderId, signature, studentId, studentName, class: className, amount } = req.body || {};
+    const { paymentId, orderId, signature, studentId, class: className, amount } = req.body || {};
     const result = await capturePayment({ paymentId, orderId, signature });
 
     let record = null;
