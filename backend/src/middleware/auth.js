@@ -13,14 +13,16 @@ const authenticateToken = async (req, res, next) => {
     }
 
     if (!token) {
+      console.log('Auth Debug - No token extracted');
       return res.status(401).json({
         success: false,
-        message: 'Access token is required'
+        message: 'Not authorized to access this route'
       });
     }
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Auth Debug - Token verified for user:', decoded.id);
 
     // E2E mode: bypass DB lookup and accept token payload
     if (process.env.E2E_MODE === 'true') {
