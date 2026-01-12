@@ -5,11 +5,21 @@ const { User } = require('../models');
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];
-    let token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    console.log('Auth Debug - Header:', authHeader); // Debug log
 
-    // Fix: Handle case where user pastes "Bearer <token>" into Swagger (resulting in "Bearer Bearer <token>")
-    if (token === 'Bearer' && authHeader.split(' ')[2]) {
-      token = authHeader.split(' ')[2];
+    let token;
+    // Robust token extraction
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      // Extract everything after "Bearer "
+      token = authHeader.substring(7).trim();
+      
+      // Handle double "Bearer" case (e.g. user pasted "Bearer <token>" in Swagger)
+      if (token.startsWith('Bearer ')) {
+        token = token.substring(7).trim();
+      }
+    } else if (authHeader) {
+      // Fallback for non-standard headers (just the token)
+      token = authHeader.trim();
     }
 
     if (!token) {
@@ -22,13 +32,16 @@ const authenticateToken = async (req, res, next) => {
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Auth Debug - Token verified for user:', decoded.id);
+    console.log('Auth Debug - Token verified for user:', decoded); // Log full payload
+
+    // Handle both 'id' and 'userId' in payload
+    const userId = decoded.userId || decoded.id;
 
     // E2E mode: bypass DB lookup and accept token payload
     if (process.env.E2E_MODE === 'true') {
       const role = decoded.role || 'admin';
       req.user = {
-        _id: decoded.userId || decoded.id || 'e2e-user',
+        _id: userId || 'e2e-user',
         role,
         firstName: 'E2E',
         lastName: 'User',
@@ -39,8 +52,9 @@ const authenticateToken = async (req, res, next) => {
     }
 
     // Find user and attach to request
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(userId).select('-password');
     if (!user) {
+      console.error(`Auth Debug - User not found for ID: ${userId}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid token - user not found'
